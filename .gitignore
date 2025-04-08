@@ -1,2 +1,1 @@
-# Create or edit .gitignore
-echo ".env" >> .gitignore
+.env
