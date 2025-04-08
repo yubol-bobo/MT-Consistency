@@ -18,6 +18,19 @@ Large Language Models (LLMs) have shown remarkable capabilities across various t
 | ![Image 1](figs/model_comparison_initial_accuracy.png) | ![Image 2](figs/acc_with_sol.png) |
 |:------------------------------:|:------------------------------:|
 
+### Plot 1: Initial Accuracy of LLMs on Benchmark Tasks
+- **Objective:** Evaluate the base performance of LLMs by measuring initial-round accuracy (zero-shot responses) across two independent experiments.
+- **Findings:**
+  - A clear stratification is observed: Commercial models such as **Claude (85%)** and **GPT (78%)** significantly outperform open-source models like **LLaMA (65%)** and **Mistral**.
+  - The performance spread is approximately 20 percentage points (∆ = 0.18, *p* < 0.001 via paired permutation test).
+  - The results indicate that a model’s **internal knowledge**—its capacity to provide correct answers without iterative refinement—is a strong indicator of its broader competence.
+
+### Plot 2: Accuracy Trends Across Follow-Up Rounds
+- **Objective:** Compare baseline models against our proposed **CARG (Confidence-Aware Response Generation)** method over multiple interaction rounds.
+- **Findings:**
+  - The **CARG framework** demonstrates remarkably stable performance, with a mean accuracy of 0.7482 (σ = 0.0058), maintaining consistency from round 1 (0.7543) through round 8 (0.7414).
+  - Among baseline approaches, **gpt_default** shows the strongest consistency (mean = 0.7134, σ = 0.0157), yet CARG significantly outperforms it (p < 0.001, paired t-test).
+  - This comparison highlights CARG's effectiveness in mitigating consistency degradation across multi-turn interactions.
 
 
 ---
