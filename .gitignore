@@ -1,2 +1,4 @@
 .env
 Outputs/
+__pycache__/
+*.py[cod]
