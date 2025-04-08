@@ -15,10 +15,10 @@ Large Language Models (LLMs) have shown remarkable capabilities across various t
 
 ## Main Results
 
-![](figs/model_comparison_initial_accuracy.png)
-
 | ![Image 1](figs/model_comparison_initial_accuracy.png) | ![Image 2](figs/acc_with_sol.png) |
 |:------------------------------:|:------------------------------:|
+
+
 
 ---
 ## Citation
