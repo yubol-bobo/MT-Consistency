@@ -1,6 +1,6 @@
 # Firm or Fickle? Evaluating LLM Consistency
 
-This repository contains code, data, and outputs for evaluating large language models’ (LLMs) consistency in multi-turn conversations, using **Position-Weighted Consistency (PWC)** and related metrics.
+This repository accompanies our paper [**"Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions"**](arxiv.org/abs/2503.22353) by Yubo Li, Yidi Miao, Xueying Ding, Ramayya Krishnan, and Rema Padman (Carnegie Mellon University). The work introduces a systematic evaluation framework for assessing the consistency of large language models (LLMs) over multi-turn interactions. It also proposes a novel Position-Weighted Consistency (PWC) score and a Confidence-Aware Response Generation (CARG) framework for robust performance in high-stakes domains.
 
 ---
 
