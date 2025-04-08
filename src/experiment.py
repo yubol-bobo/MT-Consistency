@@ -129,6 +129,7 @@ def run_experiment_rep(qa_pairs: list, model: str, rounds: int, random_order=Fal
     print(f"Current Model: {model_name}")
     print("+" * 70)
     exp_type = 'repetitive'
+    
     for prompt_idx in tqdm(range(8), desc="Prompts"):
         all_results = []
         conversations = []
@@ -140,7 +141,11 @@ def run_experiment_rep(qa_pairs: list, model: str, rounds: int, random_order=Fal
             conversations.append(conversation)
         try:
             conversation_dict = {i: conv for i, conv in enumerate(conversations) if conv is not None}
-            conv_file = f'{save_path}/conversations_{exp_type}_{model}_batch_{batch}.json'
+            conv_file = f'{save_path}/conversations_{exp_type}_{model_name}_batch_{batch}.json'
+            
+            # Create the directory (if it doesn't exist)
+            os.makedirs(os.path.dirname(conv_file), exist_ok=True)
+            
             with open(conv_file, 'w', encoding='utf-8') as f:
                 json.dump(conversation_dict, f, indent=4, ensure_ascii=False)
         except Exception as e:
@@ -148,7 +153,11 @@ def run_experiment_rep(qa_pairs: list, model: str, rounds: int, random_order=Fal
         try:
             df = pd.DataFrame(all_results)
             df.columns = [f'round_{i}' for i in range(df.shape[1])]
-            res_file = f'{save_path}/experiment_type_{exp_type}_{model}_prompt_{prompt_idx}_batch_{batch}.csv'
+            res_file = f'{save_path}/experiment_type_{exp_type}_{model_name}_prompt_{prompt_idx}_batch_{batch}.csv'
+            
+            # Create the directory (if it doesn't exist)
+            os.makedirs(os.path.dirname(res_file), exist_ok=True)
+            
             df.to_csv(res_file, index=False)
         except Exception as e:
             print(f"Error saving results: {str(e)}")

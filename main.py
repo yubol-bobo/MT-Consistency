@@ -29,7 +29,7 @@ def main():
     # Slice the qa_pairs list based on batch (example: 100 items per batch)
     batch_size = 6
     qa_batch = qa_pairs[batch_size * (batch-1): batch_size * batch]
-    model = model_list[2]
+    model = model_list[1]
     rounds = 8
     random_order = False
 
