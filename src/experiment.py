@@ -133,8 +133,9 @@ def run_experiment_rep(qa_pairs: list, model: str, rounds: int, random_order=Fal
     for prompt_idx in tqdm(range(8), desc="Prompts"):
         all_results = []
         conversations = []
+        
         for qa_pair in tqdm(qa_pairs, desc=f"QA Pairs (Prompt {prompt_idx})", leave=False):
-            print(f"\n=== New Question ===\nQ: {qa_pair['question']}\nCorrect Answer: {qa_pair['answer']}\n")
+            # print(f"\n=== New Question ===\nQ: {qa_pair['question']}\nCorrect Answer: {qa_pair['answer']}\n")
             repeated_prompt = [get_dynamic_prompt_list(qa_pair, random_order=random_order)[prompt_idx]] * rounds
             results, conversation, provider = exp_single_question(model=model, qa_pair=qa_pair, prompt_list=repeated_prompt)
             all_results.append(results)
