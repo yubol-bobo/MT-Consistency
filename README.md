@@ -10,8 +10,25 @@ The work introduces a systematic evaluation framework for assessing the consiste
 
 Large Language Models (LLMs) have shown remarkable capabilities across various tasks, but their deployment in high-stake domains requires consistent performance across multiple interaction rounds. This paper introduces a comprehensive framework for evaluating and improving LLM response consistency, making three key contributions. First, we propose a novel Position-Weighted Consistency (PWC) score that captures both the importance of earlystage stability and recovery patterns in multiturn interactions. Second, we present a carefully curated benchmark dataset spanning diverse domains and difficulty levels, specifically designed to evaluate LLM consistency under various challenging follow-up scenarios. Third, we introduce Confidence-Aware Response Generation (CARG), a framework that significantly improves response stability by incorporating model confidence signals into the generation process. Empirical results demonstrate that CARG significantly improves response stability without sacrificing accuracy, underscoring its potential for reliable LLM deployment in critical applications.
 
-## FlowChart
+## Experimental Design & CARG Framework Overview
 ![](figs/flowchart.png)
+
+Our experimental design consists of two complementary experiments aimed at evaluating the consistency of large language models (LLMs) over multi-turn interactions:
+
+- **Exp 1: Repetitive Follow-Ups:**  
+  For each question with an initially correct response, the same follow-up message (from a range of types such as closed-ended, open-ended, misleading, etc.) is applied repeatedly across multiple rounds. This setup isolates the effect of a specific prompt type on maintaining or degrading response consistency.
+
+- **Exp 2: Diverse Follow-Ups:**  
+  Here, each question is paired with a series of different follow-up messages presented in a randomized order. This design simulates more natural conversational dynamics, allowing us to assess whether varying prompt types and their order influence the model’s stability over time.
+
+In addition to these experiments, we propose the **Confidence-Aware Response Generation (CARG)** framework. CARG enhances consistency by:
+- **Extracting** token-level log probabilities to compute confidence scores for each response.
+- **Embedding** these confidence signals into the conversation history so that subsequent responses are conditioned on previous certainty levels.
+- **Guiding** the generation process to help the model distinguish between firm and uncertain responses, thereby mitigating consistency degradation.
+
+Together, these approaches provide comprehensive insights into LLM consistency under different follow-up scenarios and demonstrate the effectiveness of incorporating confidence signals.
+
+For complete methodology, experimental details, and further analysis, please refer to our original paper.
 
 ## Main Results
 
