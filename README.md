@@ -8,46 +8,18 @@ The work introduces a systematic evaluation framework for assessing the consiste
 
 ## Abstract
 
-LLMs have shown impressive performance on a variety of tasks but can struggle with maintaining consistent responses throughout sequential interactions. Our contributions include:
+Large Language Models (LLMs) have shown remarkable capabilities across various tasks, but their deployment in high-stake domains requires consistent performance across multiple interaction rounds. This paper introduces a comprehensive framework for evaluating and improving LLM response consistency, making three key contributions. First, we propose a novel Position-Weighted Consistency (PWC) score that captures both the importance of earlystage stability and recovery patterns in multiturn interactions. Second, we present a carefully curated benchmark dataset spanning diverse domains and difficulty levels, specifically designed to evaluate LLM consistency under various challenging follow-up scenarios. Third, we introduce Confidence-Aware Response Generation (CARG), a framework that significantly improves response stability by incorporating model confidence signals into the generation process. Empirical results demonstrate that CARG significantly improves response stability without sacrificing accuracy, underscoring its potential for reliable LLM deployment in critical applications.
 
-- The **Position-Weighted Consistency (PWC) score** to evaluate early-stage response stability.
-- The **Confidence-Aware Response Generation (CARG)** framework to dynamically incorporate model confidence in the generation process.
-- A curated benchmark and detailed experiments demonstrating key differences in LLM consistency.
 
-## Repository Structure
 
-- **Data/**  
-  Stores input data files needed for experiments.  
-  - `cleaned_data.csv` – Example of a preprocessed dataset used in experiments or demonstrations.
+## Citation
 
-- **Outputs/**  
-  Stores model outputs, logs, or benchmarking results.  
-  - **pwc_benchmark/** – Contains outputs or results files (e.g., JSON, CSV, plots) related to measuring Position-Weighted Consistency (PWC) or other metrics.
+If you find our survey useful, please cite it as follows:
 
-- **src/**  
-  Source code for running experiments and utilities:
-  - `__init__.py` – Makes the `src/` directory a Python package.
-  - `chat_module.py` – Contains functions or classes that handle multi-turn chat logic, prompt generation, or model interaction.
-  - `config.py` – Centralized configuration (hyperparameters, file paths, environment variables).  
-  - `data_utils.py` – Helper functions for loading, cleaning, or preprocessing data.  
-  - `experiment.py` – Main script or module that orchestrates experiment workflows (e.g., running multiple trials, computing metrics).
-
-- **.env**  
-  Environment variables file (optional). Place credentials or private environment variables here (e.g., API keys, logging configs) and do **not** commit sensitive info to version control.
-
-- **.gitignore**  
-  Specifies intentionally untracked files and folders (e.g., `.env`, logs, cache files).
-
-- **LICENSE**  
-  The repository’s license.
-
-- **main.py**  
-  A main entry point to run or demo the code, depending on your workflow. It may consolidate various steps (data loading, config parsing, experiment execution).
-
-- **README.md**  
-  This file, providing an overview and usage instructions.
-
-- **requirements.txt**  
-  Lists Python dependencies. Install them via:
-  ```bash
-  pip install -r requirements.txt
+```bibtex
+@article{li2025firm,
+  title={Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions},
+  author={Li, Yubo and Miao, Yidi and Ding, Xueying and Krishnan, Ramayya and Padman, Rema},
+  journal={arXiv preprint arXiv:2503.22353},
+  year={2025}
+}
