@@ -29,9 +29,9 @@ def main():
     # Choose either 'diverse' or 'repetitive'
     exp = 'diverse'  # For diverse experiment, change to 'repetitive' as needed
     batch = 1
-    batch_size = 6  # Example: process 6 items per batch
+    batch_size = 100 # Example: process 6 items per batch
     qa_batch = qa_pairs[batch_size * (batch - 1): batch_size * batch]
-    model = model_list[1]
+    model = model_list[7]
     rounds = 8
     random_order = False
 
