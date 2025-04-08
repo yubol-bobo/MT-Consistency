@@ -1,4 +1,4 @@
-# Firm or Fickle? Evaluating LLM Consistency
+# Firm or Fickle? Evaluating LLM Consistency in Sequential Interactions
 
 This official repository accompanies our paper [**"Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions"**](arxiv.org/abs/2503.22353). 
 
