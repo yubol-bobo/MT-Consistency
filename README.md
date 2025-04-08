@@ -1,6 +1,8 @@
 # Firm or Fickle? Evaluating LLM Consistency
 
-This repository accompanies our paper [**"Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions"**](arxiv.org/abs/2503.22353) by Yubo Li, Yidi Miao, Xueying Ding, Ramayya Krishnan, and Rema Padman (Carnegie Mellon University). The work introduces a systematic evaluation framework for assessing the consistency of large language models (LLMs) over multi-turn interactions. It also proposes a novel Position-Weighted Consistency (PWC) score and a Confidence-Aware Response Generation (CARG) framework for robust performance in high-stakes domains.
+This repository accompanies our paper [**"Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions"**](arxiv.org/abs/2503.22353) by Yubo Li, Yidi Miao, Xueying Ding, Ramayya Krishnan, and Rema Padman (Carnegie Mellon University). 
+
+The work introduces a systematic evaluation framework for assessing the consistency of large language models (LLMs) over multi-turn interactions. It also proposes a novel Position-Weighted Consistency (PWC) score and a Confidence-Aware Response Generation (CARG) framework for robust multi-turn consistency of LLMs in high-stakes domains.
 
 ---
 
