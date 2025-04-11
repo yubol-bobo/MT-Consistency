@@ -21,24 +21,19 @@ def main():
         "claude-3-5-sonnet-latest",
         "gpt-4o",
         "mistral-large-latest",
-        "deepseek-reasoner",
+        "deepseek-chat",
         "qwen-max-latest"
     ]
 
     # Set the experiment type:
     # Choose either 'diverse' or 'repetitive'
     exp = 'diverse'  # For diverse experiment, change to 'repetitive' as needed
-    batch = 1
+    batch = 7
     batch_size = 100 # Example: process 6 items per batch
     qa_batch = qa_pairs[batch_size * (batch - 1): batch_size * batch]
-    model = model_list[7]
+    model = model_list[2]
     rounds = 8
     random_order = False
-
-
-
-
-
 
     # Define the output directory based on experiment type
     if exp == 'diverse':
@@ -74,5 +69,5 @@ def main():
             save_path=experiment_save_path
         )
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()
