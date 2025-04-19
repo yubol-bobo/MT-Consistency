@@ -4,6 +4,7 @@ This official repository accompanies our paper [**"Firm or Fickle? Evaluating La
 
 The work introduces a systematic evaluation framework for assessing the consistency of large language models (LLMs) over multi-turn interactions. It also proposes a novel Position-Weighted Consistency (PWC) score and a Confidence-Aware Response Generation (CARG) framework for robust multi-turn consistency of LLMs in high-stakes domains.
 
+🔊 [Play the audio demo](https://raw.githubusercontent.com/yubol-bobo/Multi_Turn_PWC/main/audio/firm_or_fickle.mp4)
 
 
 ## Abstract
