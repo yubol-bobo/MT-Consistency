@@ -34,7 +34,7 @@ def llm_judge_alignment(answer: str, response: str, max_retries=3, initial_wait=
     for attempt in range(max_retries):
         try:
             completion = client.chat.completions.create(
-                model='gpt-3.5-turbo',
+                model='gpt-4o-2024-08-06',
                 messages=alignment_message,
                 temperature=0.2,
                 max_tokens=100
@@ -104,6 +104,7 @@ def exp_single_question(model: str, qa_pair: dict, prompt_list: list) -> tuple:
                      "Keep the answer simple. Begin your answer with 'The correct answer: '.")
     chat.add_message("user", f"{qa_pair['question']} {', '.join(qa_pair['choices'])}")
     response = chat.chat_completion()
+    # print('Response:', response)
     insist = llm_judge_alignment(complete_answer(qa_pair['answer']), response)
     results.append(insist)
     if not insist:
@@ -121,9 +122,6 @@ def exp_single_question(model: str, qa_pair: dict, prompt_list: list) -> tuple:
     return results, chat.get_conversation(), provider
 
 def run_experiment_rep(qa_pairs: list, model: str, rounds: int, random_order=False, batch=0, save_path:str=".") -> None:
-    """
-    Run repetitive follow-up experiments on the QA pairs.
-    """
     model_name = model.split('/')[-1] if '/' in model else model
     print("+" * 70)
     print(f"Current Model: {model_name}")
@@ -134,68 +132,55 @@ def run_experiment_rep(qa_pairs: list, model: str, rounds: int, random_order=Fal
         all_results = []
         conversations = []
         
-        for qa_pair in tqdm(qa_pairs, desc=f"QA Pairs (Prompt {prompt_idx})", leave=False):
-            # print(f"\n=== New Question ===\nQ: {qa_pair['question']}\nCorrect Answer: {qa_pair['answer']}\n")
+        for idx, qa_pair in enumerate(tqdm(qa_pairs, desc=f"QA Pairs (Prompt {prompt_idx})", leave=False)):
             repeated_prompt = [get_dynamic_prompt_list(qa_pair, random_order=random_order)[prompt_idx]] * rounds
             results, conversation, provider = exp_single_question(model=model, qa_pair=qa_pair, prompt_list=repeated_prompt)
             all_results.append(results)
             conversations.append(conversation)
-        try:
-            conversation_dict = {i: conv for i, conv in enumerate(conversations) if conv is not None}
-            conv_file = f'{save_path}/conversations_{exp_type}_{model_name}_batch_{batch}.json'
-            
-            # Create the directory (if it doesn't exist)
-            os.makedirs(os.path.dirname(conv_file), exist_ok=True)
-            
-            with open(conv_file, 'w', encoding='utf-8') as f:
-                json.dump(conversation_dict, f, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(f"Error saving conversations: {str(e)}")
-        try:
-            df = pd.DataFrame(all_results)
-            df.columns = [f'round_{i}' for i in range(df.shape[1])]
-            res_file = f'{save_path}/experiment_type_{exp_type}_{model_name}_prompt_{prompt_idx}_batch_{batch}.csv'
-            
-            # Create the directory (if it doesn't exist)
-            os.makedirs(os.path.dirname(res_file), exist_ok=True)
-            
-            df.to_csv(res_file, index=False)
-        except Exception as e:
-            print(f"Error saving results: {str(e)}")
+            # Save after each QA pair
+            try:
+                conversation_dict = {i: conv for i, conv in enumerate(conversations) if conv is not None}
+                conv_file = f'{save_path}/conversations_{exp_type}_{model_name}_batch_{batch}.json'
+                os.makedirs(os.path.dirname(conv_file), exist_ok=True)
+                with open(conv_file, 'w', encoding='utf-8') as f:
+                    json.dump(conversation_dict, f, indent=4, ensure_ascii=False)
+            except Exception as e:
+                print(f"Error saving conversations: {str(e)}")
+            try:
+                df = pd.DataFrame(all_results)
+                df.columns = [f'round_{i}' for i in range(df.shape[1])]
+                res_file = f'{save_path}/experiment_type_{exp_type}_{model_name}_prompt_{prompt_idx}_batch_{batch}.csv'
+                os.makedirs(os.path.dirname(res_file), exist_ok=True)
+                df.to_csv(res_file, index=False)
+            except Exception as e:
+                print(f"Error saving results: {str(e)}")
 
 def run_experiment_diverse(qa_pairs: list, model: str, rounds: int, random_order=False, batch_idx=0, save_path:str="."):
-    """
-    Run diverse prompts experiment on the QA pairs.
-    """
     model_name = model.split('/')[-1] if '/' in model else model
     print("+" * 70)
     print(f"Current Model: {model_name}")
     print("+" * 70)
     all_results = []
     conversations = []
-    for qa_pair in tqdm(qa_pairs, desc="QA Pairs"):
+    provider = None
+    for idx, qa_pair in enumerate(tqdm(qa_pairs, desc="QA Pairs")):
         prompt_list = get_dynamic_prompt_list(qa_pair, random_order=random_order)
         results, conversation, provider = exp_single_question(model=model, qa_pair=qa_pair, prompt_list=prompt_list)
         all_results.append(results)
         conversations.append(conversation)
-    try:
-        directory_path = f'{save_path}/{provider}/'
-        if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
-            print(f"Created directory: {directory_path}")
-        conv_file = f'{directory_path}/conversations_diverse_{model_name}_{batch_idx}.json'
-        with open(conv_file, 'w', encoding='utf-8') as f:
-            json.dump({i: conv for i, conv in enumerate(conversations) if conv is not None},
-                      f, indent=4, ensure_ascii=False)
-        print(f"Conversations saved at {conv_file}")
-    except Exception as e:
-        print(f"Error saving conversations: {str(e)}")
-    try:
-        df = pd.DataFrame(all_results)
-        df.columns = [f'round_{i}' for i in range(df.shape[1])]
-        res_file = f'{directory_path}/experiment_diverse_{model_name}_{batch_idx}.csv'
-        df.to_csv(res_file, index=False)
-        print(f"Results saved at {res_file}")
-    except Exception as e:
-        print(f"Error saving results: {str(e)}")
+        # Save after each QA pair
+        try:
+            directory_path = f'{save_path}/{provider}/'
+            if not os.path.exists(directory_path):
+                os.makedirs(directory_path)
+            conv_file = f'{directory_path}/conversations_diverse_{model_name}_{batch_idx}.json'
+            with open(conv_file, 'w', encoding='utf-8') as f:
+                json.dump({i: conv for i, conv in enumerate(conversations) if conv is not None},
+                          f, indent=4, ensure_ascii=False)
+            df = pd.DataFrame(all_results)
+            df.columns = [f'round_{i}' for i in range(df.shape[1])]
+            res_file = f'{directory_path}/experiment_diverse_{model_name}_{batch_idx}.csv'
+            df.to_csv(res_file, index=False)
+        except Exception as e:
+            print(f"Error saving results: {str(e)}")
     return df, conversations, prompt_list

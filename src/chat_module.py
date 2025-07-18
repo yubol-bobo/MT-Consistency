@@ -6,6 +6,9 @@ import anthropic
 import groq
 import google.generativeai as genai
 from mistralai import Mistral
+import time
+from google.genai.errors import ServerError
+import httpx
 
 class ChatWithMemory:
     def __init__(self, model="gpt-3.5-turbo", temperature=0.1, max_tokens=256):
@@ -116,21 +119,33 @@ class ChatWithMemory:
         return response
 
     def chat_completion_gemini(self):
+        from google import genai
+        from google.genai import types
         if not os.getenv("GEMINI_API_KEY"):
             raise ValueError("Gemini API key not set.")
-        client = openai.OpenAI(
-            api_key=os.environ["GEMINI_API_KEY"],
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-        )
-        completion = client.chat.completions.create(
-            model=self.model,
-            messages=self.messages,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens
-        )
-        response = completion.choices[0].message.content or "No response"
-        self.add_message("assistant", response)
-        return response
+        client = genai.Client()
+        # Concatenate all messages into a single prompt string
+        prompt = ""
+        for msg in self.messages:
+            prompt += f"{msg['role']}: {msg['content']}\n"
+        # Call Gemini API
+        for attempt in range(5):  # Try up to 5 times
+            try:
+                response = client.models.generate_content(
+                    model=self.model,  # e.g., "gemini-2.5-pro"
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(thinking_budget=0) # Disables thinking
+                    ),
+                )
+                text = response.text if hasattr(response, 'text') else str(response)
+                # print(f"Gemini answer: {text}")
+                self.add_message("assistant", text)
+                return text
+            except (ServerError, httpx.ConnectError) as e:
+                print(f"Error: {e}. Retrying in 10 seconds... (attempt {attempt+1}/5)")
+                time.sleep(10)
+        raise RuntimeError("Failed after 5 retries due to server/network errors.")
 
     def chat_completion_deepseek(self, logprobs=True):
         if not openai.api_key:
