@@ -22,6 +22,7 @@ def main():
         "meta-llama/llama-4-scout-17b-16e-instruct",
         "meta-llama/llama-4-maverick-17b-128e-instruct",
         "gemini-2.5-flash",
+        v"gemini-2.5-pro",
         "claude-3-5-sonnet-latest",
         "gpt-4o",
         "mistral-large-latest",
