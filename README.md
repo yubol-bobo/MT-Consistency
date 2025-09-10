@@ -52,6 +52,31 @@ For complete methodology, experimental details, and further analysis, please ref
   - Among baseline approaches, **gpt_default** shows the strongest consistency (mean = 0.7134, σ = 0.0157), yet CARG significantly outperforms it (p < 0.001, paired t-test).
   - This comparison highlights CARG's effectiveness in mitigating consistency degradation across multi-turn interactions.
 
+## Usage
+
+### Running Experiments
+
+To run experiments with different models and configurations:
+
+```bash
+python run_experiment.py
+```
+
+The experiment script supports both repetitive and diverse follow-up scenarios. Configure the experiment parameters by editing the variables in `run_experiment.py`:
+
+- `exp`: Set to 'diverse' or 'repetitive'
+- `model_list`: Choose from available models
+- `batch_size`: Number of questions per batch
+- `rounds`: Number of follow-up rounds
+
+### Evaluation
+
+To evaluate experiment results and generate visualizations:
+
+```bash
+python evaluate.py
+```
+
 
 
 ---
@@ -60,9 +85,25 @@ For complete methodology, experimental details, and further analysis, please ref
 If you find our survey useful, please cite it as follows:
 
 ```bibtex
-@article{li2025firm,
-  title={Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions},
-  author={Li, Yubo and Miao, Yidi and Ding, Xueying and Krishnan, Ramayya and Padman, Rema},
-  journal={arXiv preprint arXiv:2503.22353},
-  year={2025}
+@inproceedings{li-etal-2025-firm,
+    title = "Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions",
+    author = "Li, Yubo  and
+      Miao, Yidi  and
+      Ding, Xueying  and
+      Krishnan, Ramayya  and
+      Padman, Rema",
+    editor = "Che, Wanxiang  and
+      Nabende, Joyce  and
+      Shutova, Ekaterina  and
+      Pilehvar, Mohammad Taher",
+    booktitle = "Findings of the Association for Computational Linguistics: ACL 2025",
+    month = jul,
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.findings-acl.347/",
+    doi = "10.18653/v1/2025.findings-acl.347",
+    pages = "6679--6700",
+    ISBN = "979-8-89176-256-5",
+    abstract = "Large Language Models (LLMs) have shown remarkable capabilities across various tasks, but their deployment in high-stake domains requires consistent and coherent behavior across multiple rounds of user interaction. This paper introduces a comprehensive framework for evaluating and improving LLM response consistency, making three key contributions . First, we introduce Position-Weighted Consistency (PWC), a metric designed to capture both the importance of early-stage stability and recovery patterns in multi-turn interactions. Second, we present MT-Consistency, a carefully curated benchmark dataset spanning diverse domains and difficulty levels, specifically designed to evaluate LLM consistency under various challenging follow-up scenarios. Third, we introduce Confidence-Aware Response Generation (CARG), a framework that significantly improves response stability by explicitly integrating internal model confidence scores during the generation process. Experimental results demonstrate that CARG significantly improves response stability without sacrificing accuracy, offering a practical path toward more dependable LLM behavior in critical, real-world deployments."
 }

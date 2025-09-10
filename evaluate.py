@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-
-import sys
-import os
-
-def main():
-    src_dir = os.path.join(os.path.dirname(__file__), 'src')
-    if src_dir not in sys.path:
-        sys.path.insert(0, src_dir)
-    from eval_visualize import run_all_evaluations
-    run_all_evaluations()
-
-if __name__ == "__main__":
-    main()
-=======
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
@@ -404,4 +389,3 @@ if __name__ == '__main__':
         plot_model_metrics_comparison(results_df)
     else:
         print('No data loaded; please check your outputs directory.')
->>>>>>> d75285df7d7c0d1b3d00a730561ff1c8df04dc7e
