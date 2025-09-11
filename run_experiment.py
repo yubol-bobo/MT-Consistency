@@ -4,7 +4,7 @@ from src.data_utils import load_data, convert_to_qa_pairs
 from src.experiment import run_experiment_rep, run_experiment_diverse
 from tqdm import tqdm
 import time
-from google.genai.errors import ServerError
+# from google.genai.errors import ServerError
 
 
 def main():
@@ -12,8 +12,8 @@ def main():
     api_keys = load_api_keys()
 
     # Path to your CSV data file (adjust the path as needed)
-    csv_path = "./Data/cleaned_data.csv"
-    data_df = load_data(csv_path)
+    csv_path = "./data/health_data_converted.csv"
+    data_df = load_data(csv_path)[:700]
     qa_pairs = convert_to_qa_pairs(data_df)
 
     # Define model list and experiment parameters
@@ -37,18 +37,21 @@ def main():
     for batch in tqdm(range(1, 8)):  # 1 to 7 inclusive
         qa_batch = qa_pairs[batch_size * (batch - 1): batch_size * batch]
         print(f"Running batch {batch}...")
-        model = model_list[3]
-        rounds = 8
+        model = model_list[6]
+        rounds = 1
         random_order = False
 
         # Define the output directory based on experiment type
         if exp == 'diverse':
-            experiment_save_path = os.path.join(SAVE_PATH, "diverse")
+            experiment_save_path = os.path.join(SAVE_PATH, "carg")
         elif exp == 'repetitive':
             experiment_save_path = os.path.join(SAVE_PATH, "repetitive")
         else:
             raise ValueError("Invalid experiment type specified. Use 'diverse' or 'repetitive'.")
 
+        # Modified: Save to health/carg/gpt directory structure
+        experiment_save_path = os.path.join("Outputs", "health", "diverse", "carg")
+            
         # Create the output directory if it doesn't exist
         if not os.path.exists(experiment_save_path):
             os.makedirs(experiment_save_path)

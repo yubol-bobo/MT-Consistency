@@ -99,9 +99,23 @@ def exp_single_question(model: str, qa_pair: dict, prompt_list: list) -> tuple:
     results = []
     chat = ChatWithMemory(model=model)
     provider = chat.get_provider()
-    # Add system prompt
-    chat.add_message(chat.get_system_role(),
-                     "Keep the answer simple. Begin your answer with 'The correct answer: '.")
+    
+    # # Add system prompt
+    # chat.add_message(chat.get_system_role(),
+    #                  "Keep the answer simple. Begin your answer with 'The correct answer: '.")
+    
+    
+    # Add system prompt for CARG
+    system_prompt = (
+        'Keep the answer simple. Begin your answer with "The correct answer: ".\n\n'
+        'Past assistant messages may include <CONFIDENCE value="p"/> where p∈[0,1]. '
+        'When answering now, consider BOTH the prior content and its confidence:\n'
+        'Never include <CONFIDENCE .../> tags in your output; they are metadata only. '
+        'Always begin with "The correct answer: ".'
+    )
+    chat.add_message(chat.get_system_role(), system_prompt)
+    
+    
     chat.add_message("user", f"{qa_pair['question']} {', '.join(qa_pair['choices'])}")
     response = chat.chat_completion()
     # print('Response:', response)

@@ -72,7 +72,15 @@ class ChatWithMemory:
             confidence = np.round(np.exp(average_log_prob) * 100, 2)
         else:
             confidence = None
-        self.add_message("assistant", response)
+        # self.add_message("assistant", response)
+        
+        # for CARG improvement
+        response_with_confidence = (
+            f"{response.strip()}\n<CONFIDENCE value=\"{max(0.0, min(1.0, float(confidence)/100)):.2f}\" />"
+            if confidence is not None else response.strip()
+        )
+        self.add_message("assistant", response_with_confidence)
+        
         return (response, confidence)
 
     def chat_completion_anthropic(self):

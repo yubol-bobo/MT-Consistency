@@ -4,7 +4,7 @@ from src.data_utils import load_data, convert_to_qa_pairs
 from src.experiment import run_experiment_rep, run_experiment_diverse
 from tqdm import tqdm
 import time
-from google.genai.errors import ServerError
+# from google.genai.errors import ServerError
 
 
 def main():
