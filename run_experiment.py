@@ -34,11 +34,11 @@ def main():
     # Choose either 'diverse' or 'repetitive'
     exp = 'diverse'  # For diverse experiment, change to 'repetitive' as needed
     batch_size = 100
-    for batch in tqdm(range(1, 8)):  # 1 to 7 inclusive
+    for batch in tqdm(range(2, 8)):  # 1 to 7 inclusive
         qa_batch = qa_pairs[batch_size * (batch - 1): batch_size * batch]
         print(f"Running batch {batch}...")
         model = model_list[6]
-        rounds = 1
+        rounds = 8
         random_order = False
 
         # Define the output directory based on experiment type
