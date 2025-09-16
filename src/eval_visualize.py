@@ -78,28 +78,113 @@ def get_model_color_palette():
         'carg': '#FFFF00'           # Bright yellow (lowercase)
     }
 
-def get_model_color(model_name, default_color='#CCCCCC'):
+def get_model_color_and_marker(model_name, default_color='#CCCCCC', default_marker='o'):
     """
-    Get color for a model, handling various naming conventions.
+    Get color and marker for a model, handling various naming conventions.
+    Returns tuple (color, marker)
     """
     color_palette = get_model_color_palette()
     
+    # Define marker styles for each model to distinguish similar colors
+    marker_map = {
+        # GPT family - Red/Pink tones with different markers
+        'gpt': ('o', '#DC143C'),           # Circle, Crimson
+        'gpt-4o': ('s', '#FF6B6B'),        # Square, Light red
+        'gpt-5': ('^', '#B22222'),         # Triangle up, Fire brick
+        'gpt_4o': ('s', '#FF6B6B'),        # Square, Light red
+        'gpt_5': ('^', '#B22222'),         # Triangle up, Fire brick
+        'openai_gpt_oss_120b': ('D', '#CD5C5C'),  # Diamond, Indian red
+        'gpt_oss': ('D', '#CD5C5C'),       # Diamond, Indian red
+        'openai/gpt-oss-120b': ('D', '#CD5C5C'),  # Diamond, Indian red
+        
+        # Claude family - Green tones with different markers
+        'claude': ('o', '#228B22'),        # Circle, Forest green
+        'claude-3-5-sonnet-latest': ('s', '#32CD32'),  # Square, Lime green
+        'claude_3_5_sonnet_latest': ('s', '#32CD32'),  # Square, Lime green
+        
+        # Gemini family - Blue tones with different markers
+        'gemini': ('o', '#4169E1'),        # Circle, Royal blue
+        'gemini-2.5-flash': ('s', '#6495ED'),  # Square, Cornflower blue
+        'gemini-2.5-pro': ('^', '#1E90FF'),    # Triangle up, Dodger blue
+        'gemini_2_5_flash': ('s', '#6495ED'),  # Square, Cornflower blue
+        'gemini_2_5_pro': ('^', '#1E90FF'),    # Triangle up, Dodger blue
+        'gemini-2-5-flash': ('s', '#6495ED'),  # Square, Cornflower blue
+        'gemini-2-5-pro': ('^', '#1E90FF'),    # Triangle up, Dodger blue
+        
+        # Llama family - Purple/Magenta tones with different markers
+        'llama': ('o', '#8B008B'),         # Circle, Dark magenta
+        'llama-3.3-70b-versatile': ('s', '#BA55D3'),  # Square, Medium orchid
+        'llama_3_3_70b_versatile': ('s', '#BA55D3'),  # Square, Medium orchid
+        'meta-llama/llama-4-scout-17b-16e-instruct': ('^', '#9370DB'),    # Triangle up, Medium purple
+        'meta_llama_llama_4_scout_17b_16e_instruct': ('^', '#9370DB'),    # Triangle up, Medium purple
+        'meta-llama/llama-4-maverick-17b-128e-instruct': ('v', '#9932CC'), # Triangle down, Dark orchid
+        'meta_llama_llama_4_maverick_17b_128e_instruct': ('v', '#9932CC'), # Triangle down, Dark orchid
+        'llama_4': ('*', '#9932CC'),       # Star, Dark orchid
+        'llama-4-scout-17b-16e-instruct': ('^', '#9370DB'),    # Triangle up, Medium purple
+        'llama-4-maverick-17b-128e-instruct': ('v', '#9932CC'), # Triangle down, Dark orchid
+        'llama_3.3': ('D', '#DA70D6'),     # Diamond, Orchid
+        'llama-3.3': ('s', '#BA55D3'),     # Square, Medium orchid
+        
+        # Qwen family - Cyan/Teal tones with different markers
+        'qwen': ('o', '#008B8B'),          # Circle, Dark cyan
+        'qwen-max-latest': ('s', '#20B2AA'),   # Square, Light sea green
+        'qwen_max_latest': ('s', '#20B2AA'),   # Square, Light sea green
+        'qwen/qwen3-32b': ('^', '#48D1CC'),    # Triangle up, Medium turquoise
+        'qwen_qwen3_32b': ('^', '#48D1CC'),    # Triangle up, Medium turquoise
+        'qwen3': ('*', '#00CED1'),         # Star, Dark turquoise
+        'qwen2.5': ('D', '#5F9EA0'),       # Diamond, Cadet blue
+        'qwen2_5': ('D', '#5F9EA0'),       # Diamond, Cadet blue
+        'qwen3-32b': ('^', '#48D1CC'),     # Triangle up, Medium turquoise
+        'qwen-2.5': ('D', '#5F9EA0'),      # Diamond, Cadet blue
+        
+        # Mistral family - Brown tones with different markers
+        'mistral': ('o', '#8B4513'),       # Circle, Saddle brown
+        'mistral-large-latest': ('s', '#A0522D'),  # Square, Sienna
+        'mistral_large_latest': ('s', '#A0522D'),  # Square, Sienna
+        
+        # DeepSeek family - Orange/Brown tones with different markers
+        'deepseek': ('o', '#FF8C00'),      # Circle, Dark orange
+        'deepseek-chat': ('s', '#FF7F50'), # Square, Coral
+        'deepseek_chat': ('s', '#FF7F50'), # Square, Coral
+        
+        # CARG - Bright yellow
+        'CARG': ('*', '#FFFF00'),          # Star, Bright yellow
+        'carg': ('*', '#FFFF00')           # Star, Bright yellow
+    }
+    
     # Direct match first
-    if model_name in color_palette:
-        return color_palette[model_name]
+    if model_name in marker_map:
+        marker, color = marker_map[model_name]
+        return color, marker
     
     # Try converting dashes to underscores
     underscore_name = model_name.replace('-', '_').replace('/', '_')
-    if underscore_name in color_palette:
-        return color_palette[underscore_name]
+    if underscore_name in marker_map:
+        marker, color = marker_map[underscore_name]
+        return color, marker
     
-    # Try extracting base model family
+    # Fallback to color palette
+    if model_name in color_palette:
+        return color_palette[model_name], default_marker
+    
+    # Try converting dashes to underscores for color
+    if underscore_name in color_palette:
+        return color_palette[underscore_name], default_marker
+    
+    # Try extracting base model family for color
     model_lower = model_name.lower()
     for family in ['gpt', 'claude', 'gemini', 'llama', 'qwen', 'mistral', 'deepseek']:
         if family in model_lower:
-            return color_palette.get(family, default_color)
+            return color_palette.get(family, default_color), default_marker
     
-    return default_color
+    return default_color, default_marker
+
+def get_model_color(model_name, default_color='#CCCCCC'):
+    """
+    Get color for a model (backward compatibility)
+    """
+    color, _ = get_model_color_and_marker(model_name, default_color)
+    return color
 
 def parse_tuple(x):
     if pd.isna(x) or str(x).strip() == '':
@@ -171,7 +256,8 @@ def evaluate_all_models(results_dir):
 def plot_accuracy_trends(accuracy_table, save_path=None):
     plt.figure(figsize=(12, 7))
     for model in accuracy_table.index:
-        plt.plot(range(9), accuracy_table.loc[model], marker='o', label=model)
+        color, marker = get_model_color_and_marker(model)
+        plt.plot(range(9), accuracy_table.loc[model], marker=marker, label=model, color=color)
         for i, val in enumerate(accuracy_table.loc[model]):
             plt.annotate(f'{val:.1f}', (i, val), textcoords="offset points", xytext=(0, 8), ha='center', fontsize=8)
     plt.xticks(range(9), [f'Round {i}' for i in range(9)])
@@ -235,8 +321,9 @@ def plot_model_round_accuracies(all_data_dict, plot_dir):
             correct = (df[round_col] == 1).sum() if round_col in df.columns else 0
             accuracy = (correct / total * 100) if total > 0 else 0
             accuracies.append(round(accuracy, 2))
-        plt.plot(range(1, 9), accuracies, marker='o', linestyle='--', label=model_name,
-                 color=get_model_color(model_name))
+        color, marker = get_model_color_and_marker(model_name)
+        plt.plot(range(1, 9), accuracies, marker=marker, linestyle='--', label=model_name,
+                 color=color)
         for i, accuracy in enumerate(accuracies):
             plt.annotate(f'{accuracy:.1f}', xy=(i + 1, accuracy), xytext=(0, 8), textcoords='offset points', ha='center', fontsize=8)
     plt.xlabel('Follow-up Round', fontweight='bold')
@@ -384,10 +471,13 @@ def plot_model_confidence_trends(plot_dir):
         std_err = filtered_df[conf_cols].sem()
         
         # Plot mean confidence line
+        color, marker = get_model_color_and_marker(model_name)
+        # Use role-specific colors if available, otherwise use model colors
+        plot_color = gpt_role_colors.get(model_name, color)
         plt.plot(range(1, 9), mean_conf.values,
-                marker='o',
+                marker=marker,
                 label=model_name.replace('_', ' ').title(),
-                color=gpt_role_colors.get(model_name, '#CCCCCC'),
+                color=plot_color,
                 **line_styles)
         
         # Add confidence interval
@@ -506,6 +596,67 @@ def analyze_and_plot_subject_level_performance(all_data, plot_dir, csv_dir):
     print(f"Level performance saved to: {os.path.join(csv_dir, 'model_level_performance_rounds.csv')}")
 
 
+def create_subject_cluster_performance(subject_df):
+    """
+    Create subject cluster performance by grouping subjects into clusters
+    """
+    # Define subject clusters
+    clusters = {
+        'Business_Economics': [
+            'accounting', 'econometrics', 'management', 'marketing', 'microeconomics'
+        ],
+        'General_Knowledge': [
+            'common_sense', 'truthful'
+        ],
+        'Humanities': [
+            'formal_logic', 'philosophy', 'prehistory', 'us_history', 'world_history', 'world_religions'
+        ],
+        'Law_Legal': [
+            'international_law', 'jurisprudence', 'law'
+        ],
+        'Medical_Health': [
+            'anatomy', 'biology', 'clinical_knowledge', 'human_sexuality', 
+            'medical_genetics', 'medicine', 'nutrition', 'virology'
+        ],
+        'STEM': [
+            'abstract_algebra', 'astronomy', 'chemistry', 'computer_science', 
+            'computer_security', 'conceptual_physics', 'electrical_engineering',
+            'machine_learning', 'mathematics', 'physics', 'statistics'
+        ],
+        'Social_Sciences': [
+            'global_facts', 'moral_scenarios', 'psychology', 'sociology'
+        ]
+    }
+    
+    # Create cluster performance dataframe
+    cluster_data = {}
+    
+    # Initialize cluster data for each model
+    for model in subject_df.columns:
+        if model == 'mean_accuracy':
+            continue
+        cluster_data[model] = {}
+    
+    # Calculate average performance for each cluster
+    for cluster_name, subjects in clusters.items():
+        for model in subject_df.columns:
+            if model == 'mean_accuracy':
+                continue
+            
+            # Get accuracies for subjects that exist in the data
+            available_subjects = [subj for subj in subjects if subj in subject_df.index]
+            
+            if available_subjects:
+                cluster_avg = subject_df.loc[available_subjects, model].mean()
+                cluster_data[model][cluster_name] = cluster_avg
+            else:
+                cluster_data[model][cluster_name] = 0.0  # Default if no subjects found
+    
+    # Convert to DataFrame
+    cluster_df = pd.DataFrame(cluster_data)
+    
+    return cluster_df
+
 def plot_subject_level_performance(results, plot_dir):
     """
     Create visualizations for subject and level performance
@@ -527,9 +678,10 @@ def plot_subject_level_performance(results, plot_dir):
     subject_df = results['subject'].drop('mean_accuracy', axis=1)
     
     for model in subject_df.columns:
+        color, marker = get_model_color_and_marker(model)
         plt.plot(range(len(subject_df)), subject_df[model], 
-                marker='o', linewidth=2, markersize=6, linestyle='--',
-                label=model, color=get_model_color(model))
+                marker=marker, linewidth=2, markersize=6, linestyle='--',
+                label=model, color=color)
     
     plt.xlabel('Subjects', fontweight='bold', fontsize=14)
     plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14)
@@ -543,14 +695,37 @@ def plot_subject_level_performance(results, plot_dir):
     plt.savefig(out_path, bbox_inches='tight', dpi=300)
     plt.close()
     
+    # Plot subject cluster performance
+    plt.figure(figsize=(14, 8))
+    cluster_df = create_subject_cluster_performance(results['subject'])
+    
+    for model in cluster_df.columns:
+        color, marker = get_model_color_and_marker(model)
+        plt.plot(range(len(cluster_df)), cluster_df[model], 
+                marker=marker, linewidth=3, markersize=8, linestyle='--',
+                label=model, color=color)
+    
+    plt.xlabel('Subject Clusters', fontweight='bold', fontsize=14)
+    plt.ylabel('Average Accuracy (%)', fontweight='bold', fontsize=14)
+    plt.title('Model Performance by Subject Cluster', fontweight='bold', fontsize=16)
+    plt.xticks(range(len(cluster_df)), cluster_df.index, rotation=45, ha='right')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.grid(True, linestyle='--', alpha=0.3)
+    plt.tight_layout()
+    
+    out_path = os.path.join(plot_dir, "model_performance_by_subject_cluster.png")
+    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    plt.close()
+    
     # Plot level performance - Line plot
     plt.figure(figsize=(12, 8))
     level_df = results['level'].drop('mean_accuracy', axis=1)
     
     for model in level_df.columns:
+        color, marker = get_model_color_and_marker(model)
         plt.plot(range(len(level_df)), level_df[model], 
-                marker='o', linewidth=2, markersize=6, linestyle='--',
-                label=model, color=get_model_color(model))
+                marker=marker, linewidth=2, markersize=6, linestyle='--',
+                label=model, color=color)
     
     plt.xlabel('Education Level', fontweight='bold', fontsize=14)
     plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14) 
@@ -593,6 +768,7 @@ def plot_subject_level_performance(results, plot_dir):
     
     print(f"Subject and level performance plots saved to: {plot_dir}")
     print(f"- model_performance_by_subject.png")
+    print(f"- model_performance_by_subject_cluster.png")
     print(f"- model_performance_by_level.png") 
     print(f"- subject_performance_heatmap.png")
     print(f"- level_performance_heatmap.png")
