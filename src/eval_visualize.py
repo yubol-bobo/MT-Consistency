@@ -9,6 +9,98 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+def get_model_color_palette():
+    """
+    Comprehensive color palette with family groupings.
+    Each model family has similar but distinct colors.
+    """
+    return {
+        # GPT family - Red/Pink tones
+        'gpt': '#DC143C',           # Crimson
+        'gpt-4o': '#FF6B6B',        # Light red
+        'gpt-5': '#B22222',         # Fire brick
+        'gpt_4o': '#FF6B6B',        # Light red (alternative naming)
+        'gpt_5': '#B22222',         # Fire brick (alternative naming)
+        'openai_gpt_oss_120b': '#CD5C5C',  # Indian red
+        'gpt_oss': '#CD5C5C',       # Indian red
+        'openai/gpt-oss-120b': '#CD5C5C',  # Indian red (slash version)
+        
+        # Claude family - Green tones
+        'claude': '#228B22',        # Forest green
+        'claude-3-5-sonnet-latest': '#32CD32',  # Lime green
+        'claude_3_5_sonnet_latest': '#32CD32',  # Lime green (underscore version)
+        
+        # Gemini family - Blue tones
+        'gemini': '#4169E1',        # Royal blue
+        'gemini-2.5-flash': '#6495ED',  # Cornflower blue
+        'gemini-2.5-pro': '#1E90FF',    # Dodger blue
+        'gemini_2_5_flash': '#6495ED',  # Cornflower blue (underscore version)
+        'gemini_2_5_pro': '#1E90FF',    # Dodger blue (underscore version)
+        'gemini-2-5-flash': '#6495ED',  # Cornflower blue (dash version)
+        'gemini-2-5-pro': '#1E90FF',    # Dodger blue (dash version)
+        
+        # Llama family - Purple/Magenta tones
+        'llama': '#8B008B',         # Dark magenta
+        'llama-3.3-70b-versatile': '#BA55D3',  # Medium orchid
+        'llama_3_3_70b_versatile': '#BA55D3',  # Medium orchid (underscore version)
+        'meta-llama/llama-4-scout-17b-16e-instruct': '#9370DB',    # Medium purple
+        'meta_llama_llama_4_scout_17b_16e_instruct': '#9370DB',    # Medium purple (underscore version)
+        'meta-llama/llama-4-maverick-17b-128e-instruct': '#9932CC', # Dark orchid
+        'meta_llama_llama_4_maverick_17b_128e_instruct': '#9932CC', # Dark orchid (underscore version)
+        'llama_4': '#9932CC',       # Dark orchid
+        'llama-4-scout-17b-16e-instruct': '#9370DB',    # Medium purple (without meta prefix)
+        'llama-4-maverick-17b-128e-instruct': '#9932CC', # Dark orchid (without meta prefix)
+        'llama_3.3': '#DA70D6',     # Orchid
+        
+        # Qwen family - Cyan/Teal tones
+        'qwen': '#008B8B',          # Dark cyan
+        'qwen-max-latest': '#20B2AA',   # Light sea green
+        'qwen_max_latest': '#20B2AA',   # Light sea green (underscore version)
+        'qwen/qwen3-32b': '#48D1CC',    # Medium turquoise
+        'qwen_qwen3_32b': '#48D1CC',    # Medium turquoise (underscore version)
+        'qwen3': '#00CED1',         # Dark turquoise
+        'qwen2.5': '#5F9EA0',       # Cadet blue
+        'qwen2_5': '#5F9EA0',       # Cadet blue (underscore version)
+        'qwen3-32b': '#48D1CC',     # Medium turquoise (without qwen prefix)
+        
+        # Mistral family - Brown tones
+        'mistral': '#8B4513',       # Saddle brown
+        'mistral-large-latest': '#A0522D',  # Sienna
+        'mistral_large_latest': '#A0522D',  # Sienna (underscore version)
+        
+        # DeepSeek family - Orange/Brown tones
+        'deepseek': '#FF8C00',      # Dark orange
+        'deepseek-chat': '#FF7F50', # Coral
+        'deepseek_chat': '#FF7F50', # Coral (underscore version)
+        
+        # CARG - Bright yellow
+        'CARG': '#FFFF00',          # Bright yellow
+        'carg': '#FFFF00'           # Bright yellow (lowercase)
+    }
+
+def get_model_color(model_name, default_color='#CCCCCC'):
+    """
+    Get color for a model, handling various naming conventions.
+    """
+    color_palette = get_model_color_palette()
+    
+    # Direct match first
+    if model_name in color_palette:
+        return color_palette[model_name]
+    
+    # Try converting dashes to underscores
+    underscore_name = model_name.replace('-', '_').replace('/', '_')
+    if underscore_name in color_palette:
+        return color_palette[underscore_name]
+    
+    # Try extracting base model family
+    model_lower = model_name.lower()
+    for family in ['gpt', 'claude', 'gemini', 'llama', 'qwen', 'mistral', 'deepseek']:
+        if family in model_lower:
+            return color_palette.get(family, default_color)
+    
+    return default_color
+
 def parse_tuple(x):
     if pd.isna(x) or str(x).strip() == '':
         return (float('nan'), float('nan'))
@@ -97,10 +189,6 @@ def plot_model_metrics_comparison(results_df, plot_dir):
     metrics_to_plot = [
         'initial_accuracy', 'average_pwc', 'average_first_sway', 'average_SR_pair'
     ]
-    color_palette = {
-        'gpt': '#FF9999', 'claude': '#99FF99', 'gemini': '#9999FF',
-        'mistral': '#FFFF99', 'llama': '#FF99FF', 'qwen': '#99FFFF', 'deepseek': '#FFA500', 'CARG': '#FF0000'
-    }
     plt.rcParams.update({
         'figure.figsize': (10, 6), 'figure.dpi': 300, 'font.size': 14, 'font.weight': 'bold',
         'font.family': 'DejaVu Sans', 'axes.labelsize': 14, 'axes.titlesize': 16,
@@ -115,7 +203,7 @@ def plot_model_metrics_comparison(results_df, plot_dir):
         plt.figure(figsize=(12, 8))
         sorted_df = results_df.sort_values(by=metric, ascending=True)
         bars = plt.barh(range(len(sorted_df)), sorted_df[metric],
-                       color=[color_palette.get(model, '#CCCCCC') for model in sorted_df['model']])
+                       color=[get_model_color(model) for model in sorted_df['model']])
         plt.yticks(range(len(sorted_df)), sorted_df['model'])
         for i, v in enumerate(sorted_df[metric]):
             plt.text(v, i, f' {v:.2f}', va='center')
@@ -139,10 +227,6 @@ def plot_model_metrics_comparison(results_df, plot_dir):
 
 def plot_model_round_accuracies(all_data_dict, plot_dir):
     plt.figure(figsize=(12, 8))
-    color_palette = {
-        'gpt': '#FF9999', 'claude': '#99FF99', 'gemini': '#9999FF',
-        'mistral': '#FFFF99', 'llama': '#FF99FF', 'qwen': '#99FFFF', 'deepseek': '#FFA500', 'CARG': '#FF0000'
-    }
     for model_name, df in all_data_dict.items():
         accuracies = []
         for i in range(1, 9):
@@ -152,7 +236,7 @@ def plot_model_round_accuracies(all_data_dict, plot_dir):
             accuracy = (correct / total * 100) if total > 0 else 0
             accuracies.append(round(accuracy, 2))
         plt.plot(range(1, 9), accuracies, marker='o', linestyle='--', label=model_name,
-                 color=color_palette.get(model_name, '#CCCCCC'))
+                 color=get_model_color(model_name))
         for i, accuracy in enumerate(accuracies):
             plt.annotate(f'{accuracy:.1f}', xy=(i + 1, accuracy), xytext=(0, 8), textcoords='offset points', ha='center', fontsize=8)
     plt.xlabel('Follow-up Round', fontweight='bold')
@@ -180,7 +264,7 @@ def find_first_sway(sequence):
     for i in range(len(sequence)-1):
         if sequence[i] == 1 and sequence[i+1] == 0:
             return i + 2
-    return 9
+    return 8
 
 def count_sway_recovery(sequence):
     count = 0
@@ -209,8 +293,8 @@ def calculate_model_metrics(df):
         first_sways.append(find_first_sway(sequence))
         sway_recoveries.append(count_sway_recovery(sequence))
     avg_pwc = np.mean(pwc_scores) if pwc_scores else float('nan')
-    valid_first_sways = [x for x in first_sways if x != 9]
-    avg_first_sway = np.mean(valid_first_sways) if valid_first_sways else float('nan')
+    # valid_first_sways = [x for x in first_sways if x != 9]
+    avg_first_sway = np.mean(first_sways) if first_sways else float('nan')
     avg_sway_recovery = np.mean(sway_recoveries) if sway_recoveries else float('nan')
     return avg_pwc, avg_first_sway, avg_sway_recovery
 
@@ -269,11 +353,11 @@ def plot_model_confidence_trends(plot_dir):
     
     plt.figure(figsize=(12, 8))
     
-    # Color palette for GPT variants
-    color_palette = {
-        'gpt_default': '#1f77b4',      # Blue
-        'gpt_friendly': '#ff7f0e',     # Orange
-        'gpt_adversarial': '#9467bd',  # Purple
+    # Color palette for GPT variants - updated to use consistent GPT family colors
+    gpt_role_colors = {
+        'gpt_default': '#DC143C',      # Crimson (main GPT family color)
+        'gpt_friendly': '#FF6B6B',     # Light red
+        'gpt_adversarial': '#B22222',  # Fire brick
     }
     
     # Line style dictionary
@@ -303,7 +387,7 @@ def plot_model_confidence_trends(plot_dir):
         plt.plot(range(1, 9), mean_conf.values,
                 marker='o',
                 label=model_name.replace('_', ' ').title(),
-                color=color_palette.get(model_name, '#CCCCCC'),
+                color=gpt_role_colors.get(model_name, '#CCCCCC'),
                 **line_styles)
         
         # Add confidence interval
@@ -311,7 +395,7 @@ def plot_model_confidence_trends(plot_dir):
                        mean_conf.values - 1.96 * std_err.values,
                        mean_conf.values + 1.96 * std_err.values,
                        alpha=0.1,
-                       color=color_palette.get(model_name, '#CCCCCC'))
+                       color=gpt_role_colors.get(model_name, '#CCCCCC'))
         
         # Add value labels for first and last points
         plt.text(1, mean_conf.values[0], f'{mean_conf.values[0]:.1f}',
@@ -426,12 +510,7 @@ def plot_subject_level_performance(results, plot_dir):
     """
     Create visualizations for subject and level performance
     """
-    # Color palette for models
-    color_palette = {
-        'gpt': '#FF9999', 'claude': '#99FF99', 'gemini': '#9999FF',
-        'mistral': '#FFFF99', 'llama_3.3': '#FF99FF', 'llama_4': '#99FFFF', 
-        'deepseek': '#FFA500', 'qwen': '#FFB6C1', 'CARG': '#FF0000'
-    }
+    # Using comprehensive model color palette
     
     plt.rcParams.update({
         'figure.figsize': (14, 8), 'figure.dpi': 300, 'font.size': 12, 'font.weight': 'bold',
@@ -450,7 +529,7 @@ def plot_subject_level_performance(results, plot_dir):
     for model in subject_df.columns:
         plt.plot(range(len(subject_df)), subject_df[model], 
                 marker='o', linewidth=2, markersize=6, linestyle='--',
-                label=model, color=color_palette.get(model, '#CCCCCC'))
+                label=model, color=get_model_color(model))
     
     plt.xlabel('Subjects', fontweight='bold', fontsize=14)
     plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14)
@@ -471,7 +550,7 @@ def plot_subject_level_performance(results, plot_dir):
     for model in level_df.columns:
         plt.plot(range(len(level_df)), level_df[model], 
                 marker='o', linewidth=2, markersize=6, linestyle='--',
-                label=model, color=color_palette.get(model, '#CCCCCC'))
+                label=model, color=get_model_color(model))
     
     plt.xlabel('Education Level', fontweight='bold', fontsize=14)
     plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14) 

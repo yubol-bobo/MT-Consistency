@@ -24,7 +24,19 @@ class ChatWithMemory:
         """
         Detect provider based on model name.
         """
-        return model_name.split('-')[0]
+        # Handle special cases first
+        if model_name == "gpt-5":
+            return "gpt5"
+        elif model_name.startswith("openai/gpt-oss"):
+            return "gpt_oss"
+        elif model_name.startswith("qwen/qwen3"):
+            return "qwen3"
+        elif model_name.startswith("qwen"):
+            return "qwen"
+        elif model_name.startswith("meta-llama"):
+            return "llama"
+        else:
+            return model_name.split('-')[0]
 
     def get_provider(self) -> str:
         return self.provider
@@ -59,15 +71,67 @@ class ChatWithMemory:
             if not openai.api_key:
                 raise ValueError("OpenAI API key not set.")
         client = openai.OpenAI()
-        completion = client.chat.completions.create(
-            model=self.model,
-            messages=self.messages,
-            temperature=self.temperature,
-            logprobs=logprobs,
-            max_completion_tokens=self.max_tokens
-        )
+        
+        # Some models have special requirements (like gpt-5)
+        models_without_logprobs = ['gpt-5']
+        models_with_fixed_temperature = ['gpt-5']  # These models only support temperature=1
+        models_need_more_tokens = ['gpt-5']  # These models need more tokens for reasoning + response
+        
+        if self.model in models_without_logprobs:
+            logprobs = False
+        
+        # Set temperature based on model requirements
+        temperature = 1.0 if self.model in models_with_fixed_temperature else self.temperature
+        
+        # Set max_tokens based on model requirements (GPT-5 uses reasoning tokens + completion tokens)
+        # GPT-5 needs much more tokens: reasoning tokens for internal thinking + completion tokens for output
+        max_tokens = 2000 if self.model in models_need_more_tokens else self.max_tokens
+        
+        try:
+            completion = client.chat.completions.create(
+                model=self.model,
+                messages=self.messages,
+                temperature=temperature,
+                logprobs=logprobs,
+                max_completion_tokens=max_tokens
+            )
+        except Exception as e:
+            error_str = str(e).lower()
+            if "logprobs" in error_str:
+                # Retry without logprobs if logprobs is the issue
+                print(f"Warning: {self.model} doesn't support logprobs, retrying without it...")
+                completion = client.chat.completions.create(
+                    model=self.model,
+                    messages=self.messages,
+                    temperature=temperature,
+                    logprobs=False,
+                    max_completion_tokens=max_tokens
+                )
+                logprobs = False
+            elif "temperature" in error_str:
+                # Retry with default temperature if temperature is the issue
+                print(f"Warning: {self.model} doesn't support custom temperature, using default...")
+                completion = client.chat.completions.create(
+                    model=self.model,
+                    messages=self.messages,
+                    temperature=1.0,
+                    logprobs=logprobs,
+                    max_completion_tokens=max_tokens
+                )
+            else:
+                raise e
+        
         response = completion.choices[0].message.content
-        if logprobs:
+        
+        # Debug: Check if response is None or empty
+        if response is None:
+            print(f"Warning: Got None response from {self.model}")
+            response = ""
+        elif not response.strip():
+            print(f"Warning: Got empty response from {self.model}")
+            print(f"Full completion object: {completion}")
+        
+        if logprobs and completion.choices[0].logprobs:
             average_log_prob = np.mean([logprob.logprob for logprob in completion.choices[0].logprobs.content])
             confidence = np.round(np.exp(average_log_prob) * 100, 2)
         else:
@@ -77,7 +141,7 @@ class ChatWithMemory:
         # for CARG improvement
         response_with_confidence = (
             f"{response.strip()}\n<CONFIDENCE value=\"{max(0.0, min(1.0, float(confidence)/100)):.2f}\" />"
-            if confidence is not None else response.strip()
+            if confidence is not None and response and response.strip() else response.strip()
         )
         self.add_message("assistant", response_with_confidence)
         
@@ -196,11 +260,81 @@ class ChatWithMemory:
         self.add_message("assistant", response)
         return response
 
+    def chat_completion_qwen3(self):
+        """Chat completion for Qwen3 models via Groq"""
+        if not os.getenv("GROQ_API_KEY"):
+            raise ValueError("Groq API key not set.")
+        client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))
+        completion = client.chat.completions.create(
+            model=self.model,
+            messages=self.messages,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature
+        )
+        response = completion.choices[0].message.content or "No response"
+        self.add_message("assistant", response)
+        return response
+
+    def chat_completion_gpt_oss(self):
+        """Chat completion for GPT-OSS models via Groq"""
+        if not os.getenv("GROQ_API_KEY"):
+            raise ValueError("Groq API key not set.")
+        client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))
+        completion = client.chat.completions.create(
+            model=self.model,
+            messages=self.messages,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature
+        )
+        response = completion.choices[0].message.content or "No response"
+        self.add_message("assistant", response)
+        return response
+
+    def chat_completion_gpt5(self):
+        """Chat completion for GPT-5 using the new responses API"""
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OpenAI API key not set.")
+        
+        client = openai.OpenAI(api_key=api_key)
+        
+        # Convert messages to a single input string for GPT-5 responses API
+        # GPT-5 responses API expects a single input string, not a conversation format
+        input_text = ""
+        for msg in self.messages:
+            if msg["role"] == "system":
+                input_text += f"System: {msg['content']}\n\n"
+            elif msg["role"] == "user":
+                input_text += f"User: {msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                input_text += f"Assistant: {msg['content']}\n\n"
+        
+        # Remove trailing newlines
+        input_text = input_text.strip()
+        
+        try:
+            result = client.responses.create(
+                model="gpt-5",
+                input=input_text,
+                reasoning={"effort": "low"},  # Control reasoning effort
+                text={"verbosity": "low"},   # Control output verbosity
+            )
+            
+            response = result.output_text or "No response"
+            self.add_message("assistant", response)
+            return response
+            
+        except Exception as e:
+            print(f"GPT-5 API Error: {e}")
+            raise e
+
     def chat_completion(self):
         """
         Choose the appropriate chat completion method based on the provider.
         """
-        if self.provider == "gpt":
+        if self.provider == "gpt5":
+            return self.chat_completion_gpt5()
+        elif self.provider == "gpt":
             return self.chat_completion_openai()
         elif self.provider == "claude":
             return self.chat_completion_anthropic()
@@ -214,5 +348,9 @@ class ChatWithMemory:
             return self.chat_completion_deepseek()
         elif self.provider == "qwen":
             return self.chat_completion_qwen()
+        elif self.provider == "qwen3":
+            return self.chat_completion_qwen3()
+        elif self.provider == "gpt_oss":
+            return self.chat_completion_gpt_oss()
         else:
             raise ValueError(f"Unsupported provider: {self.provider}")

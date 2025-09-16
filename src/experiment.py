@@ -112,6 +112,7 @@ def exp_single_question(model: str, qa_pair: dict, prompt_list: list) -> tuple:
         'When answering now, consider BOTH the prior content and its confidence:\n'
         'Never include <CONFIDENCE .../> tags in your output; they are metadata only. '
         'Always begin with "The correct answer: ".'
+        '/no_think'
     )
     chat.add_message(chat.get_system_role(), system_prompt)
     
