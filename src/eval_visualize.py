@@ -186,6 +186,18 @@ def get_model_color(model_name, default_color='#CCCCCC'):
     color, _ = get_model_color_and_marker(model_name, default_color)
     return color
 
+def save_plot_both_formats(save_path, dpi=300):
+    """
+    Save plot in both PNG and PDF formats
+    """
+    if save_path:
+        # Save PNG
+        plt.savefig(save_path, dpi=dpi, bbox_inches='tight')
+
+        # Save PDF (replace .png with .pdf)
+        pdf_path = save_path.replace('.png', '.pdf')
+        plt.savefig(pdf_path, format='pdf', bbox_inches='tight')
+
 def parse_tuple(x):
     if pd.isna(x) or str(x).strip() == '':
         return (float('nan'), float('nan'))
@@ -267,8 +279,7 @@ def plot_accuracy_trends(accuracy_table, save_path=None):
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path, dpi=300)
+    save_plot_both_formats(save_path, dpi=500)
     # plt.show()
 
 def plot_model_metrics_comparison(results_df, plot_dir):
@@ -307,7 +318,7 @@ def plot_model_metrics_comparison(results_df, plot_dir):
         plt.xlabel(xlabel_mapping[metric], fontweight='bold', fontsize=16)
         plt.tight_layout()
         out_path = os.path.join(plot_dir, f"model_comparison_{metric}.png")
-        plt.savefig(out_path, bbox_inches='tight', dpi=300)
+        save_plot_both_formats(out_path, dpi=300)
         # plt.show()
         plt.close()
 
@@ -333,7 +344,7 @@ def plot_model_round_accuracies(all_data_dict, plot_dir):
     plt.legend(loc='lower left')
     plt.tight_layout()
     out_path = os.path.join(plot_dir, "model_round_accuracies_comparison.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=500)
     # plt.show()
 
 
@@ -510,7 +521,7 @@ def plot_model_confidence_trends(plot_dir):
     
     # Save plot
     out_path = os.path.join(plot_dir, "gpt_models_confidence_comparison.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=300)
     plt.close()
     
     # Print summary statistics
@@ -664,7 +675,7 @@ def plot_subject_level_performance(results, plot_dir):
     # Using comprehensive model color palette
     
     plt.rcParams.update({
-        'figure.figsize': (14, 8), 'figure.dpi': 300, 'font.size': 12, 'font.weight': 'bold',
+        'figure.figsize': (14, 8), 'figure.dpi': 500, 'font.size': 12, 'font.weight': 'bold',
         'font.family': 'DejaVu Sans', 'axes.labelsize': 12, 'axes.titlesize': 14,
         'axes.spines.top': False, 'axes.spines.right': False, 'axes.grid': True,
         'grid.alpha': 0.3, 'grid.linestyle': '--', 'axes.axisbelow': True,
@@ -692,7 +703,7 @@ def plot_subject_level_performance(results, plot_dir):
     plt.tight_layout()
     
     out_path = os.path.join(plot_dir, "model_performance_by_subject.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=500)
     plt.close()
     
     # Plot subject cluster performance
@@ -714,56 +725,56 @@ def plot_subject_level_performance(results, plot_dir):
     plt.tight_layout()
     
     out_path = os.path.join(plot_dir, "model_performance_by_subject_cluster.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=500)
     plt.close()
-    
+
     # Plot level performance - Line plot
     plt.figure(figsize=(12, 8))
     level_df = results['level'].drop('mean_accuracy', axis=1)
-    
+
     for model in level_df.columns:
         color, marker = get_model_color_and_marker(model)
-        plt.plot(range(len(level_df)), level_df[model], 
+        plt.plot(range(len(level_df)), level_df[model],
                 marker=marker, linewidth=2, markersize=6, linestyle='--',
                 label=model, color=color)
-    
+
     plt.xlabel('Education Level', fontweight='bold', fontsize=14)
-    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14) 
+    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14)
     plt.title('Model Performance by Education Level', fontweight='bold', fontsize=16)
     plt.xticks(range(len(level_df)), level_df.index)
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.3)
     plt.tight_layout()
-    
+
     out_path = os.path.join(plot_dir, "model_performance_by_level.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=500)
     plt.close()
-    
+
     # Level performance heatmap
     plt.figure(figsize=(10, 8))
-    sns.heatmap(level_df.T, annot=True, fmt='.1f', cmap='RdYlGn', 
+    sns.heatmap(level_df.T, annot=True, fmt='.1f', cmap='RdYlGn',
                 center=70, cbar_kws={'label': 'Accuracy (%)'})
     plt.title('Level Performance Heatmap (Models vs Education Levels)', fontweight='bold', fontsize=16)
     plt.xlabel('Education Levels', fontweight='bold', fontsize=14)
     plt.ylabel('Models', fontweight='bold', fontsize=14)
     plt.tight_layout()
-    
+
     out_path = os.path.join(plot_dir, "level_performance_heatmap.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=500)
     plt.close()
-    
+
     # Subject performance heatmap
     plt.figure(figsize=(14, 10))
-    sns.heatmap(subject_df.T, annot=True, fmt='.1f', cmap='RdYlGn', 
+    sns.heatmap(subject_df.T, annot=True, fmt='.1f', cmap='RdYlGn',
                 center=70, cbar_kws={'label': 'Accuracy (%)'})
     plt.title('Subject Performance Heatmap (Models vs Subjects)', fontweight='bold', fontsize=16)
     plt.xlabel('Subjects', fontweight='bold', fontsize=14)
     plt.ylabel('Models', fontweight='bold', fontsize=14)
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
-    
+
     out_path = os.path.join(plot_dir, "subject_performance_heatmap.png")
-    plt.savefig(out_path, bbox_inches='tight', dpi=300)
+    save_plot_both_formats(out_path, dpi=500)
     plt.close()
     
     print(f"Subject and level performance plots saved to: {plot_dir}")
