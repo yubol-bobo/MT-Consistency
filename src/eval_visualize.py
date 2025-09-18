@@ -322,6 +322,34 @@ def plot_model_metrics_comparison(results_df, plot_dir):
         # plt.show()
         plt.close()
 
+def save_model_round_accuracies_csv(all_data_dict, csv_dir):
+    """
+    Save round-by-round accuracies for each model to a CSV file.
+    Each row is a model, each column is a round (1-8), cells store accuracies.
+    """
+    # Calculate accuracies for each model and round
+    accuracy_data = {}
+    
+    for model_name, df in all_data_dict.items():
+        accuracies = []
+        for i in range(1, 9):
+            round_col = f'round_{i}_ans'
+            total = len(df[round_col]) if round_col in df.columns else 0
+            correct = (df[round_col] == 1).sum() if round_col in df.columns else 0
+            accuracy = (correct / total * 100) if total > 0 else 0
+            accuracies.append(round(accuracy, 2))
+        accuracy_data[model_name] = accuracies
+    
+    # Create DataFrame with models as rows and rounds as columns
+    round_columns = [f'Round_{i}' for i in range(1, 9)]
+    accuracy_df = pd.DataFrame.from_dict(accuracy_data, orient='index', columns=round_columns)
+    
+    # Save to CSV
+    csv_path = os.path.join(csv_dir, "model_accuracies_by_round.csv")
+    accuracy_df.to_csv(csv_path, index=True)
+    
+    return csv_path
+
 def plot_model_round_accuracies(all_data_dict, plot_dir):
     plt.figure(figsize=(12, 8))
     for model_name, df in all_data_dict.items():
@@ -421,6 +449,8 @@ def run_all_evaluations():
     plot_model_metrics_comparison(results_df, plot_dir)
     # 3. Round-by-round accuracy for all models
     plot_model_round_accuracies(all_data, plot_dir)
+    round_accuracies_csv_path = save_model_round_accuracies_csv(all_data, csv_dir)
+    print(f"Model round accuracies saved to: {round_accuracies_csv_path}")
     
     # 4. GPT model confidence trends
     plot_model_confidence_trends(plot_dir)
