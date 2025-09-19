@@ -21,7 +21,7 @@ def get_model_color_palette():
         'gpt-5': '#B22222',         # Fire brick
         'gpt_4o': '#FF6B6B',        # Light red (alternative naming)
         'gpt_5': '#B22222',         # Fire brick (alternative naming)
-        'openai_gpt_oss_120b': '#CD5C5C',  # Indian red
+        'openai_gpt_oss_120b': '#CD5C5C',   # Indian red
         'gpt_oss': '#CD5C5C',       # Indian red
         'openai/gpt-oss-120b': '#CD5C5C',  # Indian red (slash version)
         
@@ -271,11 +271,11 @@ def plot_accuracy_trends(accuracy_table, save_path=None):
         color, marker = get_model_color_and_marker(model)
         plt.plot(range(9), accuracy_table.loc[model], marker=marker, label=model, color=color)
         for i, val in enumerate(accuracy_table.loc[model]):
-            plt.annotate(f'{val:.1f}', (i, val), textcoords="offset points", xytext=(0, 8), ha='center', fontsize=8)
+            plt.annotate(f'{val:.1f}', (i, val), textcoords="offset points", xytext=(0, 8), ha='center', fontsize=12)
     plt.xticks(range(9), [f'Round {i}' for i in range(9)])
-    plt.xlabel('Round')
-    plt.ylabel('Accuracy (%)')
-    plt.title('Accuracy Trends Across Rounds for Each Model')
+    plt.xlabel('Round', fontsize=16)
+    plt.ylabel('Accuracy (%)', fontsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=14)
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
@@ -288,10 +288,10 @@ def plot_model_metrics_comparison(results_df, plot_dir):
     ]
     plt.rcParams.update({
         'figure.figsize': (10, 6), 'figure.dpi': 300, 'font.size': 14, 'font.weight': 'bold',
-        'font.family': 'DejaVu Sans', 'axes.labelsize': 14, 'axes.titlesize': 16,
+        'font.family': 'DejaVu Sans', 'axes.labelsize': 16, 'axes.titlesize': 16,
         'axes.spines.top': False, 'axes.spines.right': False, 'axes.grid': True,
         'grid.alpha': 0.3, 'grid.linestyle': '--', 'axes.axisbelow': True,
-        'xtick.labelsize': 16, 'ytick.labelsize': 16, 'legend.fontsize': 14,
+        'xtick.labelsize': 14, 'ytick.labelsize': 14, 'legend.fontsize': 15,
         'figure.facecolor': 'white', 'axes.facecolor': 'white',
         'savefig.bbox': 'tight', 'savefig.pad_inches': 0.1
     })
@@ -303,10 +303,10 @@ def plot_model_metrics_comparison(results_df, plot_dir):
                        color=[get_model_color(model) for model in sorted_df['model']])
         plt.yticks(range(len(sorted_df)), sorted_df['model'])
         for i, v in enumerate(sorted_df[metric]):
-            plt.text(v, i, f' {v:.2f}', va='center')
+            plt.text(v, i, f' {v:.2f}', va='center', fontsize=12)
         mean_value = sorted_df[metric].mean()
         plt.axvline(x=mean_value, color='red', linestyle='--', alpha=0.5, linewidth=5)
-        plt.text(mean_value, len(sorted_df), f'Mean: {mean_value:.2f}', ha='center', va='bottom', color='red')
+        plt.text(mean_value, len(sorted_df), f'Mean: {mean_value:.2f}', ha='center', va='bottom', color='red', fontsize=12)
         plt.grid(True, alpha=0.3)
         plt.ylabel('Model', fontweight='bold', fontsize=16)
         xlabel_mapping = {
@@ -364,11 +364,12 @@ def plot_model_round_accuracies(all_data_dict, plot_dir):
         plt.plot(range(1, 9), accuracies, marker=marker, linestyle='--', label=model_name,
                  color=color)
         for i, accuracy in enumerate(accuracies):
-            plt.annotate(f'{accuracy:.1f}', xy=(i + 1, accuracy), xytext=(0, 8), textcoords='offset points', ha='center', fontsize=8)
-    plt.xlabel('Follow-up Round', fontweight='bold')
-    plt.ylabel('Accuracy (%)', fontweight='bold')
+            plt.annotate(f'{accuracy:.1f}', xy=(i + 1, accuracy), xytext=(0, 8), textcoords='offset points', ha='center', fontsize=12)
+    plt.xlabel('Follow-up Round', fontweight='bold', fontsize=16)
+    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.3)
     plt.xticks(range(1, 9))
+    plt.tick_params(axis='both', which='major', labelsize=14)
     plt.legend(loc='lower left')
     plt.tight_layout()
     out_path = os.path.join(plot_dir, "model_round_accuracies_comparison.png")
@@ -530,18 +531,18 @@ def plot_model_confidence_trends(plot_dir):
         
         # Add value labels for first and last points
         plt.text(1, mean_conf.values[0], f'{mean_conf.values[0]:.1f}',
-                ha='right', va='bottom', fontsize=10)
+                ha='right', va='bottom', fontsize=12)
         plt.text(8, mean_conf.values[-1], f'{mean_conf.values[-1]:.1f}',
-                ha='left', va='bottom', fontsize=10)
+                ha='left', va='bottom', fontsize=12)
     
     # Customize the plot
-    plt.xlabel('Follow-ups', fontsize=14, fontweight='bold')
-    plt.ylabel('Average Confidence Score', fontsize=14, fontweight='bold')
-    plt.title('GPT Model Confidence Trends Across Rounds', fontsize=16, fontweight='bold')
+    plt.xlabel('Follow-ups', fontsize=16, fontweight='bold')
+    plt.ylabel('Average Confidence Score', fontsize=16, fontweight='bold')
     plt.grid(True, linestyle='--', alpha=0.3)
     
     # Set x-axis ticks
     plt.xticks(range(1, 9))
+    plt.tick_params(axis='both', which='major', labelsize=14)
     
     # Add legend
     plt.legend()
@@ -631,7 +632,7 @@ def analyze_and_plot_subject_level_performance(all_data, plot_dir, csv_dir):
     level_pivot.to_csv(os.path.join(csv_dir, "model_level_performance_rounds.csv"), index=True)
     
     # Create visualizations
-    plot_subject_level_performance(results, plot_dir)
+    plot_subject_level_performance(results, plot_dir, csv_dir)
     
     print(f"\nSubject performance saved to: {os.path.join(csv_dir, 'model_subject_performance_rounds.csv')}")
     print(f"Level performance saved to: {os.path.join(csv_dir, 'model_level_performance_rounds.csv')}")
@@ -698,7 +699,7 @@ def create_subject_cluster_performance(subject_df):
     
     return cluster_df
 
-def plot_subject_level_performance(results, plot_dir):
+def plot_subject_level_performance(results, plot_dir, csv_dir):
     """
     Create visualizations for subject and level performance
     """
@@ -706,10 +707,10 @@ def plot_subject_level_performance(results, plot_dir):
     
     plt.rcParams.update({
         'figure.figsize': (14, 8), 'figure.dpi': 500, 'font.size': 12, 'font.weight': 'bold',
-        'font.family': 'DejaVu Sans', 'axes.labelsize': 12, 'axes.titlesize': 14,
+        'font.family': 'DejaVu Sans', 'axes.labelsize': 16, 'axes.titlesize': 14,
         'axes.spines.top': False, 'axes.spines.right': False, 'axes.grid': True,
         'grid.alpha': 0.3, 'grid.linestyle': '--', 'axes.axisbelow': True,
-        'xtick.labelsize': 10, 'ytick.labelsize': 10, 'legend.fontsize': 10,
+        'xtick.labelsize': 14, 'ytick.labelsize': 14, 'legend.fontsize': 15,
         'figure.facecolor': 'white', 'axes.facecolor': 'white',
         'savefig.bbox': 'tight', 'savefig.pad_inches': 0.1
     })
@@ -724,9 +725,8 @@ def plot_subject_level_performance(results, plot_dir):
                 marker=marker, linewidth=2, markersize=6, linestyle='--',
                 label=model, color=color)
     
-    plt.xlabel('Subjects', fontweight='bold', fontsize=14)
-    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14)
-    plt.title('Model Performance by Subject', fontweight='bold', fontsize=16)
+    plt.xlabel('Subjects', fontweight='bold', fontsize=16)
+    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=16)
     plt.xticks(range(len(subject_df)), subject_df.index, rotation=45, ha='right')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, linestyle='--', alpha=0.3)
@@ -746,17 +746,46 @@ def plot_subject_level_performance(results, plot_dir):
                 marker=marker, linewidth=3, markersize=8, linestyle='--',
                 label=model, color=color)
     
-    plt.xlabel('Subject Clusters', fontweight='bold', fontsize=14)
-    plt.ylabel('Average Accuracy (%)', fontweight='bold', fontsize=14)
-    plt.title('Model Performance by Subject Cluster', fontweight='bold', fontsize=16)
-    plt.xticks(range(len(cluster_df)), cluster_df.index, rotation=45, ha='right')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Add non-overlapping annotations
+    for cluster_idx in range(len(cluster_df)):
+        # Get all values at this cluster position
+        values_at_cluster = [(model, cluster_df.loc[cluster_df.index[cluster_idx], model]) 
+                           for model in cluster_df.columns]
+        # Sort by value to determine annotation positions
+        values_at_cluster.sort(key=lambda x: x[1])
+        
+        # Calculate offsets to prevent overlapping
+        for i, (model, value) in enumerate(values_at_cluster):
+            # Alternate offsets above and below the point
+            offset_y = 12 if i % 2 == 0 else -15
+            # Add horizontal offset for crowded points
+            offset_x = (i - len(values_at_cluster)//2) * 3
+            
+            plt.annotate(f'{value:.1f}', 
+                        xy=(cluster_idx, value), 
+                        xytext=(offset_x, offset_y), 
+                        textcoords='offset points', 
+                        ha='center', va='center',
+                        fontsize=12, fontweight='bold',
+                        bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8, edgecolor='none'))
+    
+    plt.xlabel('Subject Clusters', fontweight='bold', fontsize=16)
+    plt.ylabel('Average Accuracy (%)', fontweight='bold', fontsize=16)
+    
+    # Create multi-line labels by replacing underscores with newlines
+    cluster_labels = [label.replace('_', '\n') for label in cluster_df.index]
+    plt.xticks(range(len(cluster_df)), cluster_labels, ha='center')
+    
+    plt.legend(loc='best', ncol=2, fontsize=15, frameon=True, fancybox=True, shadow=True)
     plt.grid(True, linestyle='--', alpha=0.3)
     plt.tight_layout()
     
     out_path = os.path.join(plot_dir, "model_performance_by_subject_cluster.png")
     save_plot_both_formats(out_path, dpi=500)
     plt.close()
+    
+    # Save cluster performance data to CSV
+    cluster_df.to_csv(os.path.join(csv_dir, "model_subject_cluster_performance_rounds.csv"), index=True)
 
     # Plot level performance - Line plot
     plt.figure(figsize=(12, 8))
@@ -768,9 +797,31 @@ def plot_subject_level_performance(results, plot_dir):
                 marker=marker, linewidth=2, markersize=6, linestyle='--',
                 label=model, color=color)
 
-    plt.xlabel('Education Level', fontweight='bold', fontsize=14)
-    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=14)
-    plt.title('Model Performance by Education Level', fontweight='bold', fontsize=16)
+    # Add non-overlapping annotations
+    for level_idx in range(len(level_df)):
+        # Get all values at this level position
+        values_at_level = [(model, level_df.loc[level_df.index[level_idx], model]) 
+                          for model in level_df.columns]
+        # Sort by value to determine annotation positions
+        values_at_level.sort(key=lambda x: x[1])
+        
+        # Calculate offsets to prevent overlapping
+        for i, (model, value) in enumerate(values_at_level):
+            # Alternate offsets above and below the point
+            offset_y = 12 if i % 2 == 0 else -15
+            # Add horizontal offset for crowded points
+            offset_x = (i - len(values_at_level)//2) * 3
+            
+            plt.annotate(f'{value:.1f}', 
+                        xy=(level_idx, value), 
+                        xytext=(offset_x, offset_y), 
+                        textcoords='offset points', 
+                        ha='center', va='center',
+                        fontsize=12, fontweight='bold',
+                        bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8, edgecolor='none'))
+
+    plt.xlabel('Education Level', fontweight='bold', fontsize=16)
+    plt.ylabel('Accuracy (%)', fontweight='bold', fontsize=16)
     plt.xticks(range(len(level_df)), level_df.index)
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.3)
@@ -784,9 +835,9 @@ def plot_subject_level_performance(results, plot_dir):
     plt.figure(figsize=(10, 8))
     sns.heatmap(level_df.T, annot=True, fmt='.1f', cmap='RdYlGn',
                 center=70, cbar_kws={'label': 'Accuracy (%)'})
-    plt.title('Level Performance Heatmap (Models vs Education Levels)', fontweight='bold', fontsize=16)
-    plt.xlabel('Education Levels', fontweight='bold', fontsize=14)
-    plt.ylabel('Models', fontweight='bold', fontsize=14)
+    plt.xlabel('Education Levels', fontweight='bold', fontsize=16)
+    plt.ylabel('Models', fontweight='bold', fontsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=14)
     plt.tight_layout()
 
     out_path = os.path.join(plot_dir, "level_performance_heatmap.png")
@@ -797,10 +848,10 @@ def plot_subject_level_performance(results, plot_dir):
     plt.figure(figsize=(14, 10))
     sns.heatmap(subject_df.T, annot=True, fmt='.1f', cmap='RdYlGn',
                 center=70, cbar_kws={'label': 'Accuracy (%)'})
-    plt.title('Subject Performance Heatmap (Models vs Subjects)', fontweight='bold', fontsize=16)
-    plt.xlabel('Subjects', fontweight='bold', fontsize=14)
-    plt.ylabel('Models', fontweight='bold', fontsize=14)
+    plt.xlabel('Subjects', fontweight='bold', fontsize=16)
+    plt.ylabel('Models', fontweight='bold', fontsize=16)
     plt.xticks(rotation=45, ha='right')
+    plt.tick_params(axis='both', which='major', labelsize=14)
     plt.tight_layout()
 
     out_path = os.path.join(plot_dir, "subject_performance_heatmap.png")
@@ -813,3 +864,5 @@ def plot_subject_level_performance(results, plot_dir):
     print(f"- model_performance_by_level.png") 
     print(f"- subject_performance_heatmap.png")
     print(f"- level_performance_heatmap.png")
+    
+    print(f"Subject cluster performance saved to: {os.path.join(csv_dir, 'model_subject_cluster_performance_rounds.csv')}")
