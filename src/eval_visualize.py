@@ -68,14 +68,14 @@ def get_model_color_palette():
         'mistral-large-latest': '#A0522D',  # Sienna
         'mistral_large_latest': '#A0522D',  # Sienna (underscore version)
         
-        # DeepSeek family - Orange/Brown tones
-        'deepseek': '#FF8C00',      # Dark orange
-        'deepseek-chat': '#FF7F50', # Coral
-        'deepseek_chat': '#FF7F50', # Coral (underscore version)
-        
-        # CARG - Bright yellow
-        'CARG': '#FFFF00',          # Bright yellow
-        'carg': '#FFFF00'           # Bright yellow (lowercase)
+        # DeepSeek family - Now using bright magenta/hot pink for high visibility
+        'deepseek': '#FF1493',      # Deep pink - highly visible (swapped from CARG)
+        'deepseek-chat': '#FF1493', # Deep pink (swapped from CARG)
+        'deepseek_chat': '#FF1493', # Deep pink (swapped from CARG)
+
+        # CARG - Now using orange/brown tones
+        'CARG': '#FF8C00',          # Dark orange (swapped from DeepSeek)
+        'carg': '#FF8C00'           # Dark orange (swapped from DeepSeek)
     }
 
 def get_model_color_and_marker(model_name, default_color='#CCCCCC', default_marker='o'):
@@ -142,14 +142,14 @@ def get_model_color_and_marker(model_name, default_color='#CCCCCC', default_mark
         'mistral-large-latest': ('s', '#A0522D'),  # Square, Sienna
         'mistral_large_latest': ('s', '#A0522D'),  # Square, Sienna
         
-        # DeepSeek family - Orange/Brown tones with different markers
-        'deepseek': ('o', '#FF8C00'),      # Circle, Dark orange
-        'deepseek-chat': ('s', '#FF7F50'), # Square, Coral
-        'deepseek_chat': ('s', '#FF7F50'), # Square, Coral
-        
-        # CARG - Bright yellow
-        'CARG': ('*', '#FFFF00'),          # Star, Bright yellow
-        'carg': ('*', '#FFFF00')           # Star, Bright yellow
+        # DeepSeek family - Now using bright magenta/hot pink for high visibility
+        'deepseek': ('o', '#FF1493'),      # Circle, Deep pink (swapped from CARG)
+        'deepseek-chat': ('s', '#FF1493'), # Square, Deep pink (swapped from CARG)
+        'deepseek_chat': ('s', '#FF1493'), # Square, Deep pink (swapped from CARG)
+
+        # CARG - Now using orange/brown tones
+        'CARG': ('*', '#FF8C00'),          # Star, Dark orange (swapped from DeepSeek)
+        'carg': ('*', '#FF8C00')           # Star, Dark orange (swapped from DeepSeek)
     }
     
     # Direct match first
@@ -269,7 +269,11 @@ def plot_accuracy_trends(accuracy_table, save_path=None):
     plt.figure(figsize=(12, 7))
     for model in accuracy_table.index:
         color, marker = get_model_color_and_marker(model)
-        plt.plot(range(9), accuracy_table.loc[model], marker=marker, label=model, color=color)
+        # Make CARG line thicker and more prominent
+        linewidth = 4 if model.upper() == 'CARG' else 2
+        markersize = 10 if model.upper() == 'CARG' else 6
+        plt.plot(range(9), accuracy_table.loc[model], marker=marker, label=model, color=color,
+                linewidth=linewidth, markersize=markersize)
         for i, val in enumerate(accuracy_table.loc[model]):
             plt.annotate(f'{val:.1f}', (i, val), textcoords="offset points", xytext=(0, 8), ha='center', fontsize=12)
     plt.xticks(range(9), [f'Round {i}' for i in range(9)])
@@ -326,16 +330,21 @@ def save_model_round_accuracies_csv(all_data_dict, csv_dir):
     """
     Save round-by-round accuracies for each model to a CSV file.
     Each row is a model, each column is a round (1-8), cells store accuracies.
+    Only considers rows where round_0 == 1 for denominator calculation.
     """
     # Calculate accuracies for each model and round
     accuracy_data = {}
-    
+
     for model_name, df in all_data_dict.items():
+        # Only consider rows where round_0 == 1 (same logic as other metrics)
+        mask = df['round_0'] == 1
+        filtered_df = df[mask]
+
         accuracies = []
         for i in range(1, 9):
             round_col = f'round_{i}_ans'
-            total = len(df[round_col]) if round_col in df.columns else 0
-            correct = (df[round_col] == 1).sum() if round_col in df.columns else 0
+            total = len(filtered_df[round_col]) if round_col in filtered_df.columns else 0
+            correct = (filtered_df[round_col] == 1).sum() if round_col in filtered_df.columns else 0
             accuracy = (correct / total * 100) if total > 0 else 0
             accuracies.append(round(accuracy, 2))
         accuracy_data[model_name] = accuracies
@@ -353,16 +362,23 @@ def save_model_round_accuracies_csv(all_data_dict, csv_dir):
 def plot_model_round_accuracies(all_data_dict, plot_dir):
     plt.figure(figsize=(12, 8))
     for model_name, df in all_data_dict.items():
+        # Only consider rows where round_0 == 1 (same logic as other metrics)
+        mask = df['round_0'] == 1
+        filtered_df = df[mask]
+
         accuracies = []
         for i in range(1, 9):
             round_col = f'round_{i}_ans'
-            total = len(df[round_col]) if round_col in df.columns else 0
-            correct = (df[round_col] == 1).sum() if round_col in df.columns else 0
+            total = len(filtered_df[round_col]) if round_col in filtered_df.columns else 0
+            correct = (filtered_df[round_col] == 1).sum() if round_col in filtered_df.columns else 0
             accuracy = (correct / total * 100) if total > 0 else 0
             accuracies.append(round(accuracy, 2))
         color, marker = get_model_color_and_marker(model_name)
+        # Make CARG line thicker and more prominent
+        linewidth = 4 if model_name.upper() == 'CARG' else 2
+        markersize = 10 if model_name.upper() == 'CARG' else 6
         plt.plot(range(1, 9), accuracies, marker=marker, linestyle='--', label=model_name,
-                 color=color)
+                 color=color, linewidth=linewidth, markersize=markersize)
         for i, accuracy in enumerate(accuracies):
             plt.annotate(f'{accuracy:.1f}', xy=(i + 1, accuracy), xytext=(0, 8), textcoords='offset points', ha='center', fontsize=12)
     plt.xlabel('Follow-up Round', fontweight='bold', fontsize=16)
@@ -721,8 +737,11 @@ def plot_subject_level_performance(results, plot_dir, csv_dir):
     
     for model in subject_df.columns:
         color, marker = get_model_color_and_marker(model)
-        plt.plot(range(len(subject_df)), subject_df[model], 
-                marker=marker, linewidth=2, markersize=6, linestyle='--',
+        # Make CARG line thicker and more prominent
+        linewidth = 4 if model.upper() == 'CARG' else 2
+        markersize = 10 if model.upper() == 'CARG' else 6
+        plt.plot(range(len(subject_df)), subject_df[model],
+                marker=marker, linewidth=linewidth, markersize=markersize, linestyle='--',
                 label=model, color=color)
     
     plt.xlabel('Subjects', fontweight='bold', fontsize=16)
@@ -742,8 +761,11 @@ def plot_subject_level_performance(results, plot_dir, csv_dir):
     
     for model in cluster_df.columns:
         color, marker = get_model_color_and_marker(model)
-        plt.plot(range(len(cluster_df)), cluster_df[model], 
-                marker=marker, linewidth=3, markersize=8, linestyle='--',
+        # Make CARG line thicker and more prominent
+        linewidth = 5 if model.upper() == 'CARG' else 3
+        markersize = 12 if model.upper() == 'CARG' else 8
+        plt.plot(range(len(cluster_df)), cluster_df[model],
+                marker=marker, linewidth=linewidth, markersize=markersize, linestyle='--',
                 label=model, color=color)
     
     # Add non-overlapping annotations
@@ -793,8 +815,11 @@ def plot_subject_level_performance(results, plot_dir, csv_dir):
 
     for model in level_df.columns:
         color, marker = get_model_color_and_marker(model)
+        # Make CARG line thicker and more prominent
+        linewidth = 4 if model.upper() == 'CARG' else 2
+        markersize = 10 if model.upper() == 'CARG' else 6
         plt.plot(range(len(level_df)), level_df[model],
-                marker=marker, linewidth=2, markersize=6, linestyle='--',
+                marker=marker, linewidth=linewidth, markersize=markersize, linestyle='--',
                 label=model, color=color)
 
     # Add non-overlapping annotations
