@@ -331,6 +331,7 @@ def save_model_round_accuracies_csv(all_data_dict, csv_dir):
     Save round-by-round accuracies for each model to a CSV file.
     Each row is a model, each column is a round (1-8), cells store accuracies.
     Only considers rows where round_0 == 1 for denominator calculation.
+    Includes an additional column showing the average accuracy from rounds 1 to 8.
     """
     # Calculate accuracies for each model and round
     accuracy_data = {}
@@ -348,15 +349,18 @@ def save_model_round_accuracies_csv(all_data_dict, csv_dir):
             accuracy = (correct / total * 100) if total > 0 else 0
             accuracies.append(round(accuracy, 2))
         accuracy_data[model_name] = accuracies
-    
+
     # Create DataFrame with models as rows and rounds as columns
     round_columns = [f'Round_{i}' for i in range(1, 9)]
     accuracy_df = pd.DataFrame.from_dict(accuracy_data, orient='index', columns=round_columns)
-    
+
+    # Add average accuracy column for rounds 1-8
+    accuracy_df['Avg_Round_1_to_8'] = accuracy_df[round_columns].mean(axis=1).round(2)
+
     # Save to CSV
     csv_path = os.path.join(csv_dir, "model_accuracies_by_round.csv")
     accuracy_df.to_csv(csv_path, index=True)
-    
+
     return csv_path
 
 def plot_model_round_accuracies(all_data_dict, plot_dir):
