@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CARG — Confidence-Aware Response Generation</title>
+<meta name="description" content="CARG: a confidence-aware decoding framework that stabilises LLM answers across multi-turn follow-ups. Companion page to the MT-Consistency benchmark (Li et al., ACL 2025)." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#111935; --card:#141d3b; --line:#23305e;
+  --txt:#e7ecff; --mut:#9aa6cf; --acc:#7c9cff; --acc2:#a78bfa; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+  --row-hover:#192246; --bar-bg:#1a2348; --code-bg:#0d1535; --tr-border:#1a2348;
+  --hero-grad1:rgba(167,139,250,.25); --hero-grad2:rgba(124,156,255,.25); --hero-end:#0d1430;
+  --title-grad:linear-gradient(90deg,#fff 0%,#c9d4ff 50%,#a78bfa 100%);
+  --eyebrow-bg:#1a1640; --eyebrow-border:#3a2f6b; --eyebrow-txt:#a78bfa;
+  --acl-bg:#0f2a22; --acl-border:#1f5d44; --acl-txt:#34d399;
+  --heading:#dfe6ff; --authors:#cdd5fb;
+  --rank-bg:#1a2348; --rank-txt:#9aa6cf;
+  --btn-primary-grad:linear-gradient(135deg,#5e72ff,#a78bfa); --btn-primary-txt:#ffffff;
+  --tab-active-txt:#0b1020;
+  --frontier:#f59e0b;
+  --shadow:0 4px 14px rgba(0,0,0,.18);
+}
+[data-theme="light"]{
+  --bg:#f7f8fc; --bg2:#eef1fb; --card:#ffffff; --line:#e3e8f5;
+  --txt:#0f1532; --mut:#5b6788; --acc:#4f6bff; --acc2:#7c54e6;
+  --row-hover:#f1f4ff; --bar-bg:#e7ecff; --code-bg:#f3f5fc; --tr-border:#eef1fb;
+  --hero-grad1:rgba(124,84,230,.18); --hero-grad2:rgba(79,107,255,.18); --hero-end:#eef1fb;
+  --title-grad:linear-gradient(90deg,#0f1532 0%,#4f6bff 60%,#7c54e6 100%);
+  --eyebrow-bg:#efeaff; --eyebrow-border:#d6c9ff; --eyebrow-txt:#6b46c1;
+  --acl-bg:#e6fbf2; --acl-border:#9fe7c4; --acl-txt:#0f7a4f;
+  --heading:#0f1532; --authors:#2a3460;
+  --rank-bg:#eef1fb; --rank-txt:#5b6788;
+  --btn-primary-grad:linear-gradient(135deg,#4f6bff,#7c54e6); --btn-primary-txt:#ffffff;
+  --tab-active-txt:#ffffff;
+  --frontier:#d97706;
+  --shadow:0 4px 14px rgba(15,21,50,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* Hero */
+header.hero{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(1200px 500px at 80% -10%, var(--hero-grad1), transparent 60%),
+    radial-gradient(900px 500px at 10% 10%, var(--hero-grad2), transparent 60%),
+    linear-gradient(180deg,var(--bg) 0%,var(--bg) 60%,var(--hero-end) 100%);
+  border-bottom:1px solid var(--line);
+}
+.hero-inner{padding:72px 0 56px}
+.eyebrow{display:inline-block;font-family:JetBrains Mono,monospace;font-size:12px;color:var(--eyebrow-txt);
+  border:1px solid var(--eyebrow-border);background:var(--eyebrow-bg);padding:6px 10px;border-radius:999px;letter-spacing:.08em}
+.eyebrow.acl{color:var(--acl-txt);border-color:var(--acl-border);background:var(--acl-bg)}
+h1{font-size:clamp(32px,5vw,52px);line-height:1.1;font-weight:800;margin:18px 0 10px;
+  background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);font-size:18px;max-width:780px}
+.authors{margin-top:18px;color:var(--authors);font-size:15px}
+.affil{color:var(--mut);font-size:13px;margin-top:4px}
+.cta{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;
+  border:1px solid var(--line);background:var(--card);color:var(--txt);font-weight:600;font-size:14px;transition:.2s}
+.btn:hover{transform:translateY(-1px);border-color:var(--acc);text-decoration:none}
+.btn.primary{background:var(--btn-primary-grad);border:none;color:var(--btn-primary-txt)}
+
+/* Page nav */
+.page-tabs{display:inline-flex;gap:4px;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:4px;margin-bottom:18px}
+.page-tab{padding:7px 14px;font-size:13px;font-weight:600;border-radius:7px;color:var(--mut);text-decoration:none;transition:.15s}
+.page-tab:hover{color:var(--txt);text-decoration:none}
+.page-tab.active{background:var(--acc);color:var(--tab-active-txt)}
+
+/* Sections */
+section{padding:64px 0;border-bottom:1px solid var(--line)}
+h2{font-size:28px;margin:0 0 8px;font-weight:800}
+.lead{color:var(--mut);max-width:820px;margin-bottom:28px;line-height:1.55}
+
+/* Cards / grid */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h3{margin:0 0 6px;font-size:16px;color:var(--heading)}
+.card p{margin:0;color:var(--mut);font-size:14px;line-height:1.55}
+
+/* CARG explainer */
+.carg-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:820px){.carg-grid{grid-template-columns:1fr}}
+.carg-steps{display:flex;flex-direction:column;gap:10px}
+.carg-step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.carg-step .num-chip{font-family:JetBrains Mono,monospace;font-weight:700;color:var(--eyebrow-txt);background:var(--eyebrow-bg);
+  border:1px solid var(--eyebrow-border);border-radius:8px;padding:4px 8px;font-size:12px;flex-shrink:0}
+.carg-step h4{margin:0 0 4px;font-size:14px;color:var(--heading)}
+.carg-step p{margin:0;color:var(--mut);font-size:13.5px;line-height:1.5}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px}
+.stat .stat-label{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.stat .stat-val{font-size:24px;font-weight:800;font-family:JetBrains Mono,monospace;color:var(--heading)}
+.stat .stat-delta{font-size:12px;color:var(--good);margin-top:2px;font-family:JetBrains Mono,monospace}
+
+/* Theme toggle */
+.theme-toggle{position:fixed;top:18px;right:18px;z-index:50;width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--line);background:var(--card);color:var(--txt);cursor:pointer;font-size:18px;
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.theme-toggle:hover{border-color:var(--acc)}
+
+/* Chart card */
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:24px}
+.chart-card h3{margin:0 0 12px;font-size:16px}
+.chart-card .canvas-wrap{position:relative;width:100%;height:380px}
+.chart-card .sub-note{color:var(--mut);font-size:13px;margin-top:12px;line-height:1.5}
+@media (max-width:640px){.chart-card .canvas-wrap{height:300px}}
+
+/* Code-ish helpers */
+code{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:JetBrains Mono,monospace;font-size:12px;color:var(--txt)}
+code.cite{display:block;text-align:left;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;
+  padding:16px;font-family:JetBrains Mono,monospace;font-size:12.5px;color:var(--txt);white-space:pre;overflow:auto;margin-top:14px}
+.note{font-size:12.5px;color:var(--mut);line-height:1.55}
+
+/* Footer */
+footer{padding:36px 0 60px;color:var(--mut);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <nav class="page-tabs" aria-label="Project sections">
+      <a class="page-tab" href="index.html">MT-Consistency Benchmark</a>
+      <a class="page-tab active" href="carg.html">CARG Framework</a>
+    </nav>
+    <br/>
+    <span class="eyebrow">Intervention · Confidence-aware decoding</span>
+    <span class="eyebrow acl" style="margin-left:8px">From ACL 2025 Findings</span>
+    <h1>CARG<br/>Confidence-Aware Response Generation</h1>
+    <p class="sub">Our proposed fix for multi-turn flip-flopping. CARG embeds token-level confidence scores into the dialogue history, so each answer is conditioned on how certain the model was about its earlier answers — yielding near-flat accuracy across all 8 adversarial follow-up rounds.</p>
+    <div class="authors">Yubo Li · Yidi Miao · Xueying Ding · Ramayya Krishnan · Rema Padman</div>
+    <div class="affil">Carnegie Mellon University</div>
+    <div class="cta">
+      <a class="btn primary" href="#how">⚙️ How it works</a>
+      <a class="btn" href="#rounds">📉 Round-by-round</a>
+      <a class="btn" href="index.html">🏆 Benchmark page</a>
+      <a class="btn" id="paperBtn" href="https://aclanthology.org/2025.findings-acl.347/" target="_blank" rel="noopener">📄 Paper</a>
+      <a class="btn" id="githubBtn" href="https://github.com/yubol-bobo/MT-Consistency" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg> GitHub</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Why CARG?</h2>
+    <p class="lead">On the <a href="index.html">MT-Consistency benchmark</a>, every non-reasoning LLM we tested loses between 10 and 35 percentage points of accuracy over 8 follow-up rounds when challenged adversarially. The flip happens because the model can't tell its <i>firm</i> answers apart from its <i>uncertain</i> ones — the dialogue history is just text. CARG injects that missing signal.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>⚙️ How CARG works</h2>
+    <p class="lead">A three-stage extension of the standard decoding loop: extract confidence, embed it in the history, and let the decoder read it back.</p>
+
+    <div class="carg-grid">
+      <div class="carg-steps">
+        <div class="carg-step">
+          <span class="num-chip">01</span>
+          <div><h4>Confidence Extraction</h4><p>Token-level log-probabilities of the answer span are aggregated into a single confidence score <code>cₜ</code> for each response <code>rₜ</code>.</p></div>
+        </div>
+        <div class="carg-step">
+          <span class="num-chip">02</span>
+          <div><h4>Confidence Embedding</h4><p>Confidence is appended to each turn of the history: <code>hₜ = {(q₁,r₁,c₁),…,(q_{t-1},r_{t-1},c_{t-1}),qₜ}</code>. Future responses condition on past certainty, not just past text.</p></div>
+        </div>
+        <div class="carg-step">
+          <span class="num-chip">03</span>
+          <div><h4>Confidence-Guided Generation</h4><p>The decoder explicitly reads the confidence trajectory and decides whether to reinforce its prior stance or re-evaluate — <code>rₜ = argmax P(r | hₜ, θ, c_{t-1})</code>.</p></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="padding:22px">
+          <h3 style="margin:0 0 6px">Headline result</h3>
+          <p style="color:var(--mut);font-size:14px;line-height:1.55;margin:0">CARG maintains remarkably stable accuracy across all 8 follow-up rounds and significantly outperforms the strongest baseline (<i>gpt_default</i>) with <i>p</i>&nbsp;&lt;&nbsp;0.001 on a paired <i>t</i>-test.</p>
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat-label">CARG mean acc</div>
+              <div class="stat-val">0.7482</div>
+              <div class="stat-delta">σ = 0.0058 · R1→R8 stable</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">GPT-4o baseline</div>
+              <div class="stat-val">0.7134</div>
+              <div class="stat-delta" style="color:var(--warn)">σ = 0.0157</div>
+            </div>
+          </div>
+          <p class="note" style="margin-top:14px">CARG reaches <b>R8 accuracy = 0.7414</b>, within 1.3&nbsp;pp of its R1 accuracy (0.7543). All six paper baselines lose 10–35&nbsp;pp over the same interval.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="rounds">
+  <div class="wrap">
+    <h2>📉 Round-by-Round Accuracy</h2>
+    <p class="lead">Accuracy across follow-up rounds 1 → 8, conditioned on a correct initial answer. <b>CARG</b> (solid orange) is within noise of its R1 value all the way out to R8, while baselines dip sharply. The dashed red line is the GPT-4o prompting baseline (constant mean).</p>
+
+    <div class="chart-card">
+      <h3>Accuracy across 8 follow-up rounds</h3>
+      <div class="canvas-wrap"><canvas id="trendChart"></canvas></div>
+      <p class="sub-note">Click any legend entry to toggle a series. Mistral / Llama-3.3 / Qwen-2.5 / Llama-4 are hidden by default — click to reveal.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Citation</h2>
+    <p class="lead">If the CARG framework is useful in your research, please cite:</p>
+<code class="cite">@inproceedings{li-etal-2025-firm,
+    title     = "Firm or Fickle? Evaluating Large Language Models Consistency in Sequential Interactions",
+    author    = "Li, Yubo  and
+                 Miao, Yidi  and
+                 Ding, Xueying  and
+                 Krishnan, Ramayya  and
+                 Padman, Rema",
+    editor    = "Che, Wanxiang  and
+                 Nabende, Joyce  and
+                 Shutova, Ekaterina  and
+                 Pilehvar, Mohammad Taher",
+    booktitle = "Findings of the Association for Computational Linguistics: ACL 2025",
+    month     = jul,
+    year      = "2025",
+    address   = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url       = "https://aclanthology.org/2025.findings-acl.347/",
+    doi       = "10.18653/v1/2025.findings-acl.347",
+    pages     = "6679--6700",
+    ISBN      = "979-8-89176-256-5"
+}</code>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Built for the <a href="https://github.com/yubol-bobo/MT-Consistency">MT-Consistency</a> project ·
+    Back to the <a href="index.html">benchmark page</a> · © 2025 The authors
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+ * Trend data — paper Appendix Exp.2 table, plus CARG row.
+ * ============================================================ */
+const TREND = {
+  "Gemini-1.5":          [56.29,36.43,41.29,43.71,36.86,42.71,43.57,33.86],
+  "Claude-3.5":          [76.71,65.71,62.00,48.57,64.14,65.14,64.71,57.57],
+  "GPT-4o (est. mean)":  [71.34,71.34,71.34,71.34,71.34,71.34,71.34,71.34],
+  "Mistral":             [57.71,51.43,53.43,48.43,48.14,46.57,46.86,47.43],
+  "Llama-3.3":           [54.43,51.71,48.43,47.29,51.00,22.57,24.43,32.71],
+  "Qwen-2.5":            [67.00,66.14,67.29,50.86,63.00,58.29,55.00,59.29],
+  "Deepseek-R1":         [64.00,64.86,62.00,50.57,63.71,54.57,49.86,58.43],
+  "Llama-4":             [56.71,54.29,53.71,52.00,51.14,47.57,48.43,48.71],
+  "CARG (GPT-4o + CARG)":[75.43,74.00,74.29,74.86,75.71,75.00,75.14,74.14],
+};
+const TREND_COLORS = {
+  "Gemini-1.5":          "#a78bfa",
+  "Claude-3.5":          "#34d399",
+  "GPT-4o (est. mean)":  "#f87171",
+  "Mistral":             "#fbbf24",
+  "Llama-3.3":           "#ec4899",
+  "Qwen-2.5":            "#22d3ee",
+  "Deepseek-R1":         "#60a5fa",
+  "Llama-4":             "#f472b6",
+  "CARG (GPT-4o + CARG)":"#f59e0b",
+};
+
+/* ============================================================
+ * Theme
+ * ============================================================ */
+const themeBtn = document.getElementById("themeToggle");
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function updateTheme(c){
+  const txt = cssVar("--txt"), mut = cssVar("--mut"), grid = cssVar("--bar-bg");
+  c.options.plugins.legend.labels.color = txt;
+  Object.values(c.options.scales).forEach(s=>{
+    if(s.title){s.title.color = mut}
+    if(s.ticks){s.ticks.color = mut}
+    if(s.grid){s.grid.color  = grid}
+  });
+  c.update();
+}
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "light" ? "🌙" : "☀️";
+  localStorage.setItem("theme", t);
+  if(window._trendChart) updateTheme(window._trendChart);
+}
+themeBtn.addEventListener("click",()=>{
+  const cur = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  applyTheme(cur === "light" ? "dark" : "light");
+});
+applyTheme(localStorage.getItem("theme") || "dark");
+
+/* ============================================================
+ * Trend chart
+ * ============================================================ */
+window._trendChart = new Chart(document.getElementById("trendChart"),{
+  type:"line",
+  data:{
+    labels:[1,2,3,4,5,6,7,8],
+    datasets:Object.entries(TREND).map(([m,v])=>({
+      label:m, data:v,
+      borderColor:TREND_COLORS[m]||"#7c9cff",
+      backgroundColor:(TREND_COLORS[m]||"#7c9cff")+"33",
+      tension:.3,
+      borderWidth: m.startsWith("CARG") ? 3.5 : 2,
+      borderDash:  m.startsWith("CARG") ? [] : (m.startsWith("GPT-4o (est") ? [4,4] : []),
+      pointRadius:3, pointHoverRadius:6,
+      hidden: ["Mistral","Llama-3.3","Qwen-2.5","Llama-4"].includes(m)
+    }))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, interaction:{mode:"nearest",intersect:false},
+    plugins:{
+      legend:{labels:{color:cssVar("--txt"),font:{family:"Inter",weight:"600"},boxWidth:12,padding:10}},
+      tooltip:{}
+    },
+    scales:{
+      x:{title:{display:true,text:"Follow-up round",color:cssVar("--mut")},ticks:{color:cssVar("--mut")},grid:{color:cssVar("--bar-bg")}},
+      y:{title:{display:true,text:"Accuracy (%)",color:cssVar("--mut")},ticks:{color:cssVar("--mut")},grid:{color:cssVar("--bar-bg")},suggestedMin:20,suggestedMax:90}
+    }
+  }
+});
+updateTheme(window._trendChart);
+
+/* ============================================================
+ * config.json overrides (shared with index.html)
+ * ============================================================ */
+fetch("config.json").then(r=>r.json()).then(cfg=>{
+  if(cfg.paper)   document.getElementById("paperBtn").href   = cfg.paper;
+  if(cfg.github)  document.getElementById("githubBtn").href  = cfg.github;
+}).catch(e=>console.warn("config.json not loaded:",e));
+</script>
+</body>
+</html>
