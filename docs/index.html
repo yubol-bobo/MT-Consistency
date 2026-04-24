@@ -461,11 +461,13 @@ function updateTheme(c){
  * ============================================================ */
 function ymToX(d){ const [y,m] = d.split("-").map(Number); return y*12 + (m-1); }
 function xToYm(x){ const y = Math.floor(x/12), m = (x%12)+1; return `${y}/${String(m).padStart(2,"0")}`; }
+// `min` / `max` are the chart's y-axis range (zoomed to where points actually
+// live so recent-model differences are visible).
 const METRIC_LABELS = {
-  pwc:              { label:"PWC score",        unit:"",  max:1.82, higherBetter:true },
-  initial_accuracy: { label:"Initial Accuracy", unit:"%", max:100,  higherBetter:true },
-  avg_accuracy:     { label:"Avg Accuracy",     unit:"%", max:100,  higherBetter:true },
-  first_sway:       { label:"First Sway Round", unit:"",  max:9,    higherBetter:true },
+  pwc:              { label:"PWC score",        unit:"",  min:1,  max:2,   higherBetter:true },
+  initial_accuracy: { label:"Initial Accuracy", unit:"%", min:50, max:100, higherBetter:true },
+  avg_accuracy:     { label:"Avg Accuracy",     unit:"%", min:50, max:100, higherBetter:true },
+  first_sway:       { label:"First Sway Round", unit:"",  min:3,  max:8,   higherBetter:true },
 };
 
 function frontierFor(metric){
@@ -577,7 +579,7 @@ function buildSotaChart(metric){
         y:{
           title:{display:true,text:`${meta.label}${meta.unit?` (${meta.unit.replace("%","%")})`:""}`,color:cssVar("--mut")},
           ticks:{color:cssVar("--mut")}, grid:{color:cssVar("--bar-bg")},
-          suggestedMin:0, suggestedMax:meta.max
+          min: meta.min ?? 0, max: meta.max
         }
       }
     }
